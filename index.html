@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>天平叙事局 - 轻量文字桌游 Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a"></div>
+    <div class="bg-shape bg-shape-b"></div>
+
+    <header class="topbar">
+      <div class="game-title">天平叙事局</div>
+      <div class="balance-wrap">
+        <div class="balance-head">
+          <span>男性权益</span>
+          <span>社会权利差值 <b id="globalGap">0</b></span>
+          <span>女性权益</span>
+        </div>
+        <div class="balance-track">
+          <div id="balanceLeft" class="balance-left"></div>
+          <div id="balanceMid" class="balance-mid"></div>
+          <div id="balanceRight" class="balance-right"></div>
+        </div>
+      </div>
+      <div class="round-wrap">
+        <div>回合 <b id="roundNum">1</b>/20</div>
+        <div>当前玩家: <b id="currentPlayerName">-</b></div>
+        <div>行动阶段: <b id="turnStage">主行动</b></div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="left-panel" id="leftPanel"></aside>
+
+      <section class="center-panel">
+        <div class="board-grid">
+          <button class="board-card" data-scene="workplace">
+            <span class="icon">💼</span>
+            <h3>职场</h3>
+            <p>同工同酬/晋升歧视/育儿平衡</p>
+          </button>
+          <button class="board-card" data-scene="family">
+            <span class="icon">🏠</span>
+            <h3>个人生活/家庭</h3>
+            <p>婚恋自主/家务分工/代际冲突</p>
+          </button>
+
+          <button class="court-node" id="courtBtn" data-scene="court">
+            法庭
+            <small>每5轮必开庭</small>
+          </button>
+
+          <button class="board-card" data-scene="culture">
+            <span class="icon">🗣️</span>
+            <h3>文化广场</h3>
+            <p>图书馆/社交广场/咨询室</p>
+          </button>
+          <button class="board-card" data-scene="opportunity">
+            <span class="icon">🎲</span>
+            <h3>人生机遇场</h3>
+            <p>第10轮后开放，获取道具或破局</p>
+          </button>
+          <button class="board-card" data-scene="pvp">
+            <span class="icon">🤝</span>
+            <h3>PVP互动</h3>
+            <p>结婚/离婚/援助，联动关系与财富</p>
+          </button>
+          <button class="board-card" data-scene="meditate">
+            <span class="icon">🧘</span>
+            <h3>冥想</h3>
+            <p>稳定恢复，替代一次行动消耗</p>
+          </button>
+        </div>
+      </section>
+
+      <aside class="right-feed">
+        <div class="feed-title">经历手账</div>
+        <div id="feedList" class="feed-list"></div>
+      </aside>
+    </main>
+
+    <button class="mobile-player-fab" id="mobileFab">玩家面板</button>
+
+    <div class="modal hidden" id="eventModal">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2 id="modalTitle">事件</h2>
+          <button id="closeModal">×</button>
+        </div>
+        <div id="modalBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <template id="optionTemplate">
+      <button class="option-btn">
+        <div class="option-title"></div>
+        <div class="option-desc"></div>
+        <div class="option-impact"></div>
+      </button>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
