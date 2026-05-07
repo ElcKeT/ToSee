@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_395853df8a35",
+  "createdAt": "2026-04-20T09:17:09.501Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::19::第四章",
+    "sectionIndex": 19,
+    "heading": "第四章",
+    "startLine": 1057,
+    "charCount": 421
+  },
+  "themes": {
+    "canonical": [
+      "育儿责任",
+      "情绪劳动",
+      "职场公平",
+      "性别刻板印象"
+    ],
+    "raw": [
+      "育儿责任",
+      "情绪劳动",
+      "职场公平",
+      "性别刻板印象"
+    ]
+  },
+  "title": "当育儿成为全天候无薪劳动",
+  "conflictCore": "母亲在职场结束后被迫承担全部育儿责任，导致身心耗竭与社会期待之间的撕裂",
+  "storyBlueprint": {
+    "background": "一位职场母亲每日完成正式工作后，仍需独自承担幼儿的全部照护任务，缺乏家庭支持与制度缓冲",
+    "trigger": "她下班后无法获得片刻休息，必须立即投入高强度育儿，产生持续焦虑与自我价值质疑",
+    "escalation": "社会将她的疲惫视为‘个别情绪问题’，否定其结构性困境，加剧孤立感与内疚",
+    "dilemma": "是继续忍受隐形剥削以维持‘好母亲’形象，还是公开表达不满却面临道德指责？",
+    "decisionFrames": [
+      {
+        "label": "隐忍承担",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "维持家庭表面和谐，但个人精力持续透支",
+        "longTermImpact": "强化性别角色固化，可能引发心理健康危机"
+      },
+      {
+        "label": "要求重新分配责任",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能引发家庭矛盾或被贴上‘不称职母亲’标签",
+        "longTermImpact": "推动家务与育儿责任平等化，为其他女性树立先例"
+      }
+    ],
+    "endingDirections": [
+      "通过沟通建立共同育儿机制，获得伴侣或家人支持",
+      "因长期压抑导致关系破裂或退出职场，陷入经济与情感双重困境"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "贾丝明",
+        "target": "职场母亲（30-40岁，有学龄前子女）"
+      },
+      {
+        "source": "母亲角色",
+        "target": "主要照护者（可替换为父亲/其他监护人）"
+      }
+    ],
+    "modernization": [
+      "可设定为远程办公背景下工作与育儿界限模糊",
+      "引入社区托育资源短缺、弹性工作制缺失等现实障碍"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为完全无助或怨恨儿童",
+      "不暗示育儿必然导致精神疾病，强调系统性支持缺失"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "workplace"
+    ],
+    "relationshipHints": [
+      "married",
+      "single"
+    ],
+    "conflictHooks": [
+      "‘我下班了，但我的工作才刚开始’",
+      "社会如何看待‘后悔成为母亲’的情绪？",
+      "当育儿被默认为女性专属责任时，公平何在？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.89,
+    "qualityScore": 85,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 653,
+    "prompt_tokens": 1061,
+    "total_tokens": 1714,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

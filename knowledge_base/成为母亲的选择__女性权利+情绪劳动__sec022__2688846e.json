@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_4ac767bfee27",
+  "createdAt": "2026-04-20T09:18:21.932Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::22::⺟爱的联结与束缚",
+    "sectionIndex": 22,
+    "heading": "⺟爱的联结与束缚",
+    "startLine": 1157,
+    "charCount": 2254
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "情绪劳动",
+      "性别刻板印象",
+      "心理健康"
+    ],
+    "raw": [
+      "母爱被神圣化",
+      "情感规则对女性的压迫",
+      "后悔与爱的二元对立",
+      "母亲身份的社会期待"
+    ]
+  },
+  "title": "我爱我的孩子，但我后悔成为母亲",
+  "conflictCore": "一位母亲在深爱孩子的同时，因母亲身份带来的压力而深感后悔，却面临社会对其情感真实性的质疑与道德审判。",
+  "storyBlueprint": {
+    "background": "一位女性成为母亲后，尽管对孩子怀有真挚的爱，却逐渐意识到母亲身份严重挤压了她的自我空间、职业发展和心理能量。她开始怀疑自己是否适合做母亲，并产生后悔情绪。",
+    "trigger": "她在一次家庭聚会上低声说出‘我爱孩子，但我不喜欢当妈妈’，被亲戚听见并质疑：‘不爱孩子怎么会后悔？你根本不是个好母亲。’",
+    "escalation": "这句话被传开，家人、朋友甚至育儿社群开始指责她‘冷漠’‘不道德’，要求她‘调整心态’或接受心理咨询。她被迫反复强调‘我爱我的孩子’来证明自己不是怪物。",
+    "dilemma": "她是否应该继续压抑自己的真实感受以符合社会对‘理想母亲’的期待，还是勇敢表达复杂情感，哪怕面临被污名化的风险？",
+    "decisionFrames": [
+      {
+        "label": "隐藏真实感受，强化‘好母亲’人设",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得家庭认可与社会接纳，避免冲突",
+        "longTermImpact": "长期压抑导致情绪耗竭、亲子关系表面化，可能引发抑郁或爆发性崩溃"
+      },
+      {
+        "label": "公开表达复杂情感，寻求理解与支持",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临指责、孤立甚至失去部分家庭支持",
+        "longTermImpact": "推动对母职多元体验的认知，为自己和他人争取更真实的情感空间"
+      }
+    ],
+    "endingDirections": [
+      "她选择沉默，继续扮演‘完美母亲’，但内心日益疏离，直到某天对孩子说出伤人的话后才意识到问题严重性",
+      "她在支持团体中遇到其他有类似感受的母亲，共同发起‘不完美母亲’对话运动，逐渐改变周围人的看法"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "多琳、贾丝明等受访者",
+        "target": "可替换为城市中产母亲、新手妈妈、职场回归女性等角色原型"
+      }
+    ],
+    "modernization": [
+      "将家庭聚会场景改为社交媒体发帖引发舆论风暴",
+      "加入‘母职惩罚’‘情绪劳动隐形化’等当代议题",
+      "设置心理咨询、女性互助社群等现代支持系统作为选项"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔’等同于‘虐待倾向’或‘反社会人格’",
+      "不渲染极端亲子冲突，保持对孩子爱的真实性",
+      "拒绝使用‘疯女人’‘怪物母亲’等污名化标签"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture",
+      "workplace"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "当爱必须被表演才能被相信",
+      "社会只接受‘无私的母亲’，不接受‘有需求的母亲’",
+      "情感的真实性，取决于是否符合性别剧本"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 803,
+    "prompt_tokens": 2520,
+    "total_tokens": 3323,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

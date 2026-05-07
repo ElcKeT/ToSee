@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_b8ca4c6b580f",
+  "createdAt": "2026-04-20T09:19:19.372Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::24::想尽我的最⼤能⼒照顾他，⾄少我是这么相信的，即使这要让我付出代价。”",
+    "sectionIndex": 24,
+    "heading": "想尽我的最⼤能⼒照顾他，⾄少我是这么相信的，即使这要让我付出代价。”",
+    "startLine": 1237,
+    "charCount": 1029
+  },
+  "themes": {
+    "canonical": [
+      "育儿责任",
+      "情绪劳动",
+      "生育自主",
+      "心理健康"
+    ],
+    "raw": [
+      "母亲身份认同",
+      "育儿责任",
+      "情绪劳动",
+      "生育自主",
+      "心理健康"
+    ]
+  },
+  "title": "当母爱成为自我消解的牢笼",
+  "conflictCore": "一位女性在不想要孩子的前提下，仍被迫承担高强度育儿责任，导致自我认同撕裂与情感耗竭。",
+  "storyBlueprint": {
+    "background": "一位女性成为母亲并非出于自主意愿，但社会期待与道德压力迫使她履行母亲职责。她努力提供细致照顾，获得孩子喜爱，却始终无法接纳自己的母亲身份。",
+    "trigger": "她开始意识到，自己对孩子的付出并非出于爱，而是出于愧疚与责任，这种割裂感日益加剧。",
+    "escalation": "她越想证明自己是个好母亲，就越压抑真实感受；越感到后悔，就越加倍付出，形成情感透支的恶性循环。家人称赞她的奉献，却无人察觉她内心的痛苦。",
+    "dilemma": "是继续扮演‘完美母亲’以保护孩子免受真相伤害，还是承认自己的后悔并寻求心理支持，哪怕可能动摇家庭稳定？",
+    "decisionFrames": [
+      {
+        "label": "维持表象，继续牺牲自我",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "孩子获得稳定关爱，家庭表面和谐；但母亲情绪持续压抑，可能引发抑郁或爆发性崩溃。",
+        "longTermImpact": "孩子可能内化‘母亲必须牺牲’的性别脚本；母亲失去自我重建机会，亲子关系建立在虚假基础上。"
+      },
+      {
+        "label": "坦诚感受，寻求心理干预",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能面临家人指责‘不配做母亲’，孩子短暂困惑；但为真实沟通与疗愈打开空间。",
+        "longTermImpact": "打破沉默文化，推动家庭重新协商育儿责任；示范健康情绪表达，利于孩子心理发展。"
+      }
+    ],
+    "endingDirections": [
+      "在心理咨询中逐步整合分裂的自我，学会在照顾孩子的同时保留个人边界",
+      "因长期压抑导致身心崩溃，被迫暂停育儿职责，引发家庭系统危机与重构"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "索菲娅/森妮",
+        "target": "城市中产母亲"
+      },
+      {
+        "source": "专业指导/读书",
+        "target": "早教课程/亲子共读"
+      }
+    ],
+    "modernization": [
+      "将‘接受专业指导’转化为参加育儿社群、购买在线育儿课等当代行为",
+      "加入职场母亲无法兼顾工作与育儿的背景压力",
+      "通过社交媒体展示‘完美妈妈’形象加剧内在冲突"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为冷漠或虐待倾向",
+      "不暗示孩子应察觉母亲后悔",
+      "禁止出现自残或伤害孩子的表述"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "therapy",
+      "social media"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "co-parenting"
+    ],
+    "conflictHooks": [
+      "‘我越爱他们，就越恨自己当初的决定’",
+      "‘如果我不是个好妈妈，他们会不会更可怜？’",
+      "‘没人问我愿不愿意当母亲，却要求我必须是个好母亲’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 94,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 790,
+    "prompt_tokens": 1578,
+    "total_tokens": 2368,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

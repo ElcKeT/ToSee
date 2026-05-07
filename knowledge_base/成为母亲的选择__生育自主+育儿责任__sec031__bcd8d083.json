@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_b2fea549c245",
+  "createdAt": "2026-04-20T09:21:25.526Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::31::保护孩⼦，保持沉默",
+    "sectionIndex": 31,
+    "heading": "保护孩⼦，保持沉默",
+    "startLine": 1797,
+    "charCount": 8041
+  },
+  "themes": {
+    "canonical": [
+      "生育自主",
+      "育儿责任",
+      "情绪劳动",
+      "代际边界"
+    ],
+    "raw": [
+      "母亲后悔生育",
+      "亲子沟通困境",
+      "母职的社会期待",
+      "代际价值观传递",
+      "情绪劳动",
+      "身体与心理边界"
+    ]
+  },
+  "title": "母亲的沉默：为了保护孩子，还是压抑自我？",
+  "conflictCore": "母亲在是否向子女坦承生育后悔之间挣扎，既怕伤害孩子情感，又担忧沉默会延续不真实的母职叙事。",
+  "storyBlueprint": {
+    "background": "一位母亲在养育子女多年后，开始反思自己当初成为母亲的抉择，并感受到强烈的后悔情绪。她意识到这种感受与社会对‘好妈妈’的期待严重冲突，同时也担心向已成年的子女坦白会影响亲子关系。",
+    "trigger": "子女偶然提问：‘如果你能重新选择，还会生孩子吗？’引发母亲内心剧烈震荡。",
+    "escalation": "母亲陷入两难：一方面害怕说出真相会让子女产生被抛弃感或自我怀疑；另一方面又觉得隐瞒真相是对子女知情权的剥夺，也可能让他们未来重复自己的错误人生路径。",
+    "dilemma": "是否应该打破‘母亲必须无条件爱孩子、享受育儿’的社会脚本，向子女坦诚自己的真实感受？",
+    "decisionFrames": [
+      {
+        "label": "保持沉默，维护表面和谐",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "避免当下冲突，维持亲子关系稳定",
+        "longTermImpact": "子女无法了解真实母职体验，可能在未来盲目进入婚姻生育，延续代际循环"
+      },
+      {
+        "label": "选择坦诚，重构亲子对话",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能引发子女情绪波动，短期内关系紧张",
+        "longTermImpact": "帮助子女建立对生育的批判性认知，尊重个体选择权，促进更真实的代际沟通"
+      }
+    ],
+    "endingDirections": [
+      "母亲最终写下长信但未寄出，作为私人记录保存，象征内心和解",
+      "母亲与成年子女展开艰难但诚实的对话，双方重新定义亲情边界"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "以色列网络论坛用户",
+        "target": "匿名育儿社群成员"
+      },
+      {
+        "source": "祖母亲历者",
+        "target": "多代同堂家庭中的长辈女性"
+      },
+      {
+        "source": "青少年儿子/女儿",
+        "target": "成年或接近成年的子女"
+      }
+    ],
+    "modernization": [
+      "将线下书信改为数字日记或加密文档",
+      "引入社交媒体匿名发帖作为情绪出口",
+      "设定场景为城市双职工家庭，强调职场与育儿双重压力"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔生育’等同于‘不爱孩子’",
+      "不渲染极端亲子决裂情节",
+      "禁止出现自残或暴力倾向描写"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married",
+      "single"
+    ],
+    "conflictHooks": [
+      "当孩子问你‘你后悔生了我吗？’你怎么回答？",
+      "如果父母从不分享他们的真实感受，我们如何知道人生还有别的可能？",
+      "保护孩子，是否意味着必须隐藏自己的痛苦？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 94,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 786,
+    "prompt_tokens": 7223,
+    "total_tokens": 8009,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_a93e65830af6",
+  "createdAt": "2026-04-20T09:21:38.291Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::32::第六章",
+    "sectionIndex": 32,
+    "heading": "第六章",
+    "startLine": 1957,
+    "charCount": 638
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "性别刻板印象"
+    ],
+    "raw": [
+      "母亲后悔情绪的社会意义",
+      "母职评价标准的反思",
+      "社会对女性选择的隐性控制"
+    ]
+  },
+  "title": "后悔当母亲：被压抑的真实与社会的沉默期待",
+  "conflictCore": "社会要求女性接受母职不可逆，而部分母亲表达后悔却被视为禁忌，引发个体真实感受与集体期待之间的张力。",
+  "storyBlueprint": {
+    "background": "一位女性在成为母亲多年后，开始公开表达对自己选择的怀疑与后悔。她并非不爱孩子，而是意识到社会从未允许她谈论这种复杂情绪。周围人普遍认为‘既然生了就要接受’，甚至将她的反思视为背叛母职神圣性。",
+    "trigger": "她在一次亲友聚会中坦言：‘如果重来，我不确定还会选择生孩子’，引发激烈争论。",
+    "escalation": "亲友指责她‘不负责任’‘伤害孩子’，伴侣也劝她‘别胡思乱想’；同时，她发现其他母亲也有类似感受却不敢言说，形成隐秘共鸣。",
+    "dilemma": "她是否应该继续压抑真实感受以维护家庭和谐，还是勇敢发声挑战‘完美母亲’的社会神话？",
+    "decisionFrames": [
+      {
+        "label": "沉默妥协",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "家庭关系暂时缓和，但内心压抑加剧",
+        "longTermImpact": "强化母职不可质疑的规范，阻碍社会对育儿代价的讨论"
+      },
+      {
+        "label": "公开表达",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临舆论压力与关系紧张",
+        "longTermImpact": "推动社会正视母亲的情感多样性，为政策与支持体系变革铺路"
+      }
+    ],
+    "endingDirections": [
+      "她组建匿名母亲倾诉社群，逐渐影响更多人重新思考生育决策",
+      "她选择退出公共讨论，但开始私下记录真实育儿体验，作为未来改变的种子"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "研究中的母亲",
+        "target": "30-45岁城市中产母亲"
+      },
+      {
+        "source": "亲友聚会",
+        "target": "家庭微信群/社区育儿群"
+      }
+    ],
+    "modernization": [
+      "将‘公开表达’场景迁移至社交媒体或播客平台",
+      "引入职场母亲在晋升与育儿间的双重压力作为背景"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔’等同于‘不爱孩子’",
+      "不渲染极端情绪如自杀或弃养"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture",
+      "workplace"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "‘如果重来，你还会选择生孩子吗？’",
+      "当母亲说‘我后悔了’，社会第一反应是谴责还是倾听？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.88,
+    "qualityScore": 85,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 705,
+    "prompt_tokens": 1272,
+    "total_tokens": 1977,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

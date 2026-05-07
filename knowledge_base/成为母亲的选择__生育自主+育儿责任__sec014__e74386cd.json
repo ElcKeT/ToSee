@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_2d29ddfd7188",
+  "createdAt": "2026-04-20T09:15:57.807Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::14::⼥性的看法",
+    "sectionIndex": 14,
+    "heading": "⼥性的看法",
+    "startLine": 615,
+    "charCount": 5313
+  },
+  "themes": {
+    "canonical": [
+      "生育自主",
+      "育儿责任",
+      "情绪劳动",
+      "心理健康"
+    ],
+    "raw": [
+      "生育自主",
+      "育儿责任",
+      "情绪劳动",
+      "心理健康",
+      "代际边界",
+      "女性权利"
+    ]
+  },
+  "title": "如果重来，我还会选择成为母亲吗？",
+  "conflictCore": "母亲在充分认知现实困境后，仍被社会期待绑定在母职角色中，陷入‘明知后悔却无法回头’的深层矛盾。",
+  "storyBlueprint": {
+    "background": "多位女性在访谈中被问及：若带着现有认知回到过去，是否还会选择生育。她们普遍表达强烈后悔，认为育儿是沉重负担，且社会未提供足够支持。",
+    "trigger": "研究者提出假设性问题：‘如果时光倒流，你会再生孩子吗？’引发受访者直面母职的真实体验。",
+    "escalation": "随着回忆深入，母亲们坦承育儿带来的持续压力、经济投入、情感耗竭与个人自由的丧失，远超早期想象。",
+    "dilemma": "明知生育是人生重大错误，却因孩子已存在而必须承担终身责任；既想解脱，又无法真正割舍。",
+    "decisionFrames": [
+      {
+        "label": "坚持母职，接受牺牲",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "维持家庭完整，避免社会指责，但持续承受情绪与体力消耗",
+        "longTermImpact": "可能延续代际循环，子女未来也可能面临相似困境"
+      },
+      {
+        "label": "重新定义母职边界，争取自主",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临‘不负责任母亲’的舆论压力，需建立新的支持系统",
+        "longTermImpact": "推动社会对非传统育儿模式的接纳，为下一代女性拓宽选择空间"
+      }
+    ],
+    "endingDirections": [
+      "母亲通过心理辅导与社群支持，逐步设立界限，实现有限度的自我解放",
+      "社会制度未改变，母亲持续内化责任，将遗憾转化为对子女的过度补偿"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "以色列网络论坛成员",
+        "target": "线上育儿反思社群成员"
+      },
+      {
+        "source": "依舒夫屯垦区居民",
+        "target": "传统社区模范家庭代表"
+      }
+    ],
+    "modernization": [
+      "将访谈场景迁移至当代城市心理咨询室或女性成长工作坊",
+      "引入社交媒体舆论压力、职场母职惩罚、托育资源短缺等现实元素"
+    ],
+    "safetyBoundaries": [
+      "避免使用‘孩子是错误’等可能伤害亲子关系的绝对化表述",
+      "不渲染极端情绪如‘希望孩子消失’，转为‘渴望未被强加的人生路径’"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "therapy",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "divorced"
+    ],
+    "conflictHooks": [
+      "当社会赞美母爱无私时，谁来倾听母亲的疲惫？",
+      "如果成为母亲前能预知三十年辛劳，多少人仍会点头？",
+      "责任与自由之间，是否存在第三条路？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 90,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 754,
+    "prompt_tokens": 4816,
+    "total_tokens": 5570,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

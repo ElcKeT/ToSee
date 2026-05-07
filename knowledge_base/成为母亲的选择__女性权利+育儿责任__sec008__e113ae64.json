@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_127a8e33c5c9",
+  "createdAt": "2026-04-20T09:13:59.193Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::8::第⼆章",
+    "sectionIndex": 8,
+    "heading": "第⼆章",
+    "startLine": 369,
+    "charCount": 1175
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "育儿责任",
+      "性别刻板印象",
+      "情绪劳动"
+    ],
+    "raw": [
+      "母亲角色的矛盾情感",
+      "母职的社会建构",
+      "性别分工的历史根源",
+      "母性的本质化叙事",
+      "个人自由与母职期待的冲突"
+    ]
+  },
+  "title": "母亲身份：爱与恨的撕裂",
+  "conflictCore": "个体女性对母职的深刻厌恶与‘母亲必须无私爱孩子’的社会期待之间的撕裂",
+  "storyBlueprint": {
+    "background": "一位育有幼儿的女性在私人倾诉中表达了自己作为母亲的真实感受：她深爱孩子，尽力提供教育与关爱，但同时极度憎恨‘母亲’这一角色本身。她感到被角色束缚、失去自由，精神濒临崩溃。",
+    "trigger": "她在一次坦诚对话中说出‘我讨厌当母亲’，引发周围人震惊与指责，认为她‘不配做妈妈’或‘心理有问题’。",
+    "escalation": "亲友以‘母爱是天性’为由否定她的感受，强调‘所有母亲都这样，忍忍就过去了’；她开始质疑：是否只有压抑自我才算合格母亲？",
+    "dilemma": "是继续扮演社会期待的‘完美母亲’而牺牲自我认同，还是承认并表达自己对母职的负面情绪，哪怕被贴上‘失职’标签？",
+    "decisionFrames": [
+      {
+        "label": "压抑真实感受，维持‘好妈妈’形象",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得家庭认可与社会接纳，避免冲突",
+        "longTermImpact": "长期压抑可能导致抑郁、亲子关系疏离，强化‘母亲必须牺牲’的刻板印象"
+      },
+      {
+        "label": "公开表达矛盾情感，寻求心理支持与角色重构",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临误解、指责甚至家庭关系紧张",
+        "longTermImpact": "推动对母职多元体验的讨论，为其他母亲创造表达空间，促进更健康的育儿观"
+      }
+    ],
+    "endingDirections": [
+      "她选择沉默，继续扮演‘无私母亲’，但内心逐渐麻木，与孩子的情感连接减弱",
+      "她勇敢发声，加入母亲支持团体，重新定义‘好母亲’的标准，并推动伴侣分担育儿责任"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "索菲娅",
+        "target": "年轻母亲（可替换为职场妈妈、全职主妇、单亲母亲等原型）"
+      },
+      {
+        "source": "19世纪家庭分工",
+        "target": "传统性别角色期待（可替换为‘男主外女主内’等当代变体）"
+      }
+    ],
+    "modernization": [
+      "将‘家庭港湾’隐喻转化为‘妈妈是孩子情绪稳定的第一责任人’等现代育儿话语",
+      "加入社交媒体压力：朋友圈晒娃、‘完美妈妈’人设加剧内在冲突"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为‘不爱孩子’，应强调‘恨的是角色而非孩子’",
+      "不渲染极端情绪如自杀倾向，聚焦心理挣扎而非病理化"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "therapy_session",
+      "online_forum"
+    ],
+    "relationshipHints": [
+      "married",
+      "partnered",
+      "single_mother"
+    ],
+    "conflictHooks": [
+      "当你说‘我不喜欢当妈妈’，别人第一反应是震惊还是理解？",
+      "如果母爱不是天性，那‘好母亲’的标准是谁定的？",
+      "一个母亲有没有权利感到疲惫和怨恨？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 90,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 846,
+    "prompt_tokens": 1733,
+    "total_tokens": 2579,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

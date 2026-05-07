@@ -395,6 +395,56 @@ body {
   display: none;
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(25, 20, 16, 0.46);
+  display: none;
+  place-items: center;
+}
+
+.loading-card {
+  min-width: 240px;
+  max-width: 360px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  background: #fff8ec;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.loading-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  border: 3px solid rgba(31, 122, 120, 0.2);
+  border-top-color: var(--teal);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body.is-loading .loading-overlay {
+  display: grid;
+}
+
+body.is-loading .modal,
+body.is-loading .layout,
+body.is-loading .topbar,
+body.is-loading .mobile-player-fab {
+  pointer-events: none;
+}
+
 @media (max-width: 1100px) {
   .topbar {
     grid-template-columns: 1fr;

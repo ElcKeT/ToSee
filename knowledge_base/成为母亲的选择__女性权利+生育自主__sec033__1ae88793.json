@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_e579df71e913",
+  "createdAt": "2026-04-20T09:21:55.361Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::33::帮助⺟亲的优缺点",
+    "sectionIndex": 33,
+    "heading": "帮助⺟亲的优缺点",
+    "startLine": 1971,
+    "charCount": 10993
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "家务分配",
+      "育儿责任"
+    ],
+    "raw": [
+      "母亲身份的社会期待",
+      "工作与育儿的双重压力",
+      "单亲母亲的经济困境",
+      "完美母亲神话",
+      "自主性与现实落差"
+    ]
+  },
+  "title": "当母亲是选择还是重担？",
+  "conflictCore": "社会期待女性同时成为‘超级妈妈’和‘职业女性’，但现实资源与支持不足，导致母亲在身份认同、经济压力与情感满足之间陷入深层矛盾。",
+  "storyBlueprint": {
+    "background": "一位女性在职场与家庭之间疲于奔命，既要承担全职工作以维持生计，又要独自照顾有特殊需求的孩子。她缺乏伴侣支持，也没有足够的社会托育资源，长期处于情绪耗竭状态。",
+    "trigger": "孩子因社交障碍无法适应常规学校，需额外照护，而她在加班后仍要处理家务与孩子情绪问题，身心俱疲。",
+    "escalation": "她开始质疑自己是否真的适合做母亲，甚至后悔当初的选择。朋友劝她‘如果有家人帮忙就不会这么累’，但她意识到即使条件改善，内心对母亲角色的疏离感依然存在。",
+    "dilemma": "她面临两难：是继续牺牲自我满足社会对‘好母亲’的期待，还是承认自己并不享受育儿，并寻求退出这一角色的可能性？",
+    "decisionFrames": [
+      {
+        "label": "坚持履行母亲职责",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时维持家庭运转，但持续压抑个人需求，情绪进一步恶化",
+        "longTermImpact": "可能陷入长期抑郁，亲子关系表面化，孩子感知到母亲的疏离"
+      },
+      {
+        "label": "重新定义母亲角色或寻求退出路径",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇社会非议、家庭指责，短期内增加心理压力",
+        "longTermImpact": "有机会重建自我认同，探索非传统育儿模式，为孩子示范真实与自主的价值"
+      }
+    ],
+    "endingDirections": [
+      "她开始接受心理咨询，逐步建立边界，与孩子协商新的相处方式，不再追求‘完美母亲’形象",
+      "她公开表达后悔成为母亲，引发社区争议，但也促使更多人讨论母亲的真实处境与支持系统缺失"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "德国中产白人女性",
+        "target": "城市双职工家庭中的母亲"
+      },
+      {
+        "source": "单亲非裔移民母亲",
+        "target": "独自抚养孩子的低收入职场女性"
+      },
+      {
+        "source": "有特殊需求的孩子",
+        "target": "需要额外照护的儿童（如自闭症、ADHD等）"
+      }
+    ],
+    "modernization": [
+      "将‘超级妈妈’概念转化为当代社交媒体中的‘精致育儿’压力",
+      "引入灵活工作制、远程办公、社区互助育儿等现代支持机制作为变量",
+      "强调心理健康的可见性与求助行为的正当性"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为‘天生适合育儿’",
+      "不渲染杀婴或极端暴力情节，聚焦情感困境而非犯罪叙事",
+      "拒绝‘不配做母亲’等污名化语言"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "workplace",
+      "mental health clinic"
+    ],
+    "relationshipHints": [
+      "single",
+      "divorced",
+      "co-parenting with minimal support"
+    ],
+    "conflictHooks": [
+      "‘我每天都在假装爱这个孩子’",
+      "‘如果当初知道会这么孤独，我还会选择生孩子吗？’",
+      "‘社会说母亲是本能，但我的本能是逃跑’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 884,
+    "prompt_tokens": 9620,
+    "total_tokens": 10504,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

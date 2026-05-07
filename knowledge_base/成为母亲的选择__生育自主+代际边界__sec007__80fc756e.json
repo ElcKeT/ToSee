@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_4c6f3f375029",
+  "createdAt": "2026-04-20T09:13:43.853Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::7::不情愿的“⺟亲”",
+    "sectionIndex": 7,
+    "heading": "不情愿的“⺟亲”",
+    "startLine": 301,
+    "charCount": 3417
+  },
+  "themes": {
+    "canonical": [
+      "生育自主",
+      "代际边界",
+      "情绪劳动",
+      "经济控制"
+    ],
+    "raw": [
+      "生育自主",
+      "性别权力不平等",
+      "亲密关系中的控制",
+      "身体边界与同意",
+      "情绪劳动",
+      "代际边界",
+      "经济控制"
+    ]
+  },
+  "title": "被迫成为母亲：当个人意愿遭遇关系胁迫",
+  "conflictCore": "女性明确拒绝生育，却在伴侣施压、关系威胁或隐性操控下被迫成为母亲，面临自我意愿与生存安全的两难。",
+  "storyBlueprint": {
+    "background": "一位女性在成长过程中始终清楚自己不想成为母亲，她重视个人自由、职业发展或内在完整性，认为生育并非人生必经之路。她与伴侣建立亲密关系，初期双方对生育态度存在分歧但未深入冲突。",
+    "trigger": "伴侣以离婚、情感疏离、经济断供或家庭舆论为手段，直接或间接施压要求生育；或利用未出生孩子的‘神圣性’作为情感绑架工具。",
+    "escalation": "女性多次表达拒绝，但每次沟通都被弱化、否定或转化为‘暂时不适应’；伴侣持续强化‘正常人生必经阶段’的叙事，并暗示不生育等于失败、自私或关系破裂。",
+    "dilemma": "她必须在坚持自我意愿（可能失去关系、经济支持、社会归属）与妥协生育（违背本心、承担终身育儿责任）之间做出选择。",
+    "decisionFrames": [
+      {
+        "label": "坚持不生育，结束关系",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "失去亲密关系、可能面临经济困境或社会孤立",
+        "longTermImpact": "维护身体自主与心理完整，但需独自承担生活风险；可能长期背负‘破坏家庭’的污名"
+      },
+      {
+        "label": "妥协生育以维系关系",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时保全关系与经济安全，获得社会认可",
+        "longTermImpact": "陷入持续后悔与身份撕裂，育儿过程充满被动与 resentment，影响亲子质量与心理健康"
+      }
+    ],
+    "endingDirections": [
+      "她最终选择离开关系，独自生活并探索非母职人生路径，虽孤独但忠于自我",
+      "她生下孩子后陷入长期抑郁与身份困惑，亲子关系疏离，成年后公开讲述经历以警示他人"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "莉兹、欧德雅、多琳等具体人物",
+        "target": "都市职场女性/文艺从业者/高知单身女性等可替换角色原型"
+      },
+      {
+        "source": "丈夫/伴侣的宗教或民族主义背景",
+        "target": "强调‘传宗接代’‘完整人生’的传统家庭观念持有者"
+      }
+    ],
+    "modernization": [
+      "将‘离婚威胁’转化为‘冷暴力+社交圈孤立’；将‘学医受阻’改写为‘晋升机会因婚育计划被取消’；增加社交媒体舆论压力（如‘不生孩子的人生不完整’）"
+    ],
+    "safetyBoundaries": [
+      "避免将伴侣刻画为纯粹恶人，保留其‘我也想要完整家庭’的合理化动机",
+      "不渲染极端身体暴力，聚焦心理操控与结构性压迫",
+      "禁止出现‘所有男性都强迫生育’等全称判断"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "intimate_relationship",
+      "social_pressure"
+    ],
+    "relationshipHints": [
+      "married",
+      "long-term_partner"
+    ],
+    "conflictHooks": [
+      "‘如果你真的爱我，就会愿意为我生孩子’",
+      "‘现在不要，以后会后悔的’",
+      "‘别人都能当妈，你怎么这么自私？’",
+      "‘不生就分手，我爸妈等不及了’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.94,
+    "qualityScore": 92,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 879,
+    "prompt_tokens": 3465,
+    "total_tokens": 4344,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

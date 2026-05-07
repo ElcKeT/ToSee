@@ -33,35 +33,13 @@ function makeBio(name, gender, job) {
 }
 
 export function createInitialState() {
-  const players = [];
-  ["male", "male", "female", "female"].forEach((gender, idx) => {
-    const namePool = NAMES[gender];
-    const name = namePool[idx % namePool.length] + (idx > 1 ? "" : "");
-    const job = pickOne(JOBS);
-    players.push({
-      id: `p${idx + 1}`,
-      name,
-      gender,
-      age: randomInt(22, 39),
-      job,
-      bio: makeBio(name, gender, job),
-      stats: {
-        health: randomInt(45, 95),
-        reputation: randomInt(-45, 55),
-        wealth: randomInt(-20, 80),
-        rightsLevel: pickLevel(),
-        riskLevel: pickLevel(),
-      },
-      survivalProgress: randomInt(45, 75),
-      counselingUsed: 0,
-      items: [],
-      marriedTo: null,
-      intimacy: 0,
-      sharedWealthId: null,
-      alive: true,
-      lastDelta: {},
-    });
-  });
+  return createInitialStateFromPlayers(null);
+}
+
+export function createInitialStateFromPlayers(inputPlayers) {
+  const players = Array.isArray(inputPlayers) && inputPlayers.length === 4
+    ? inputPlayers.map((p, idx) => buildPlayerFromSeed(p, idx))
+    : buildRandomPlayers();
 
   return {
     round: 1,
@@ -86,22 +64,104 @@ export function createInitialState() {
     sharedWealthPools: {},
     nextPoolId: 1,
     players,
+    acquaintances: {},
     events: [],
     roundDecisionLog: [],
     winner: null,
   };
 }
 
-function levelToScore(level) {
-  if (level === "high") return 2;
-  if (level === "mid") return 1;
-  return 0;
+function buildRandomPlayers() {
+  const rows = [];
+  ["male", "male", "female", "female"].forEach((gender, idx) => {
+    const namePool = NAMES[gender];
+    const name = namePool[idx % namePool.length] + (idx > 1 ? "" : "");
+    const job = pickOne(JOBS);
+    rows.push(
+      buildPlayerFromSeed(
+        {
+          name,
+          gender,
+          age: randomInt(22, 39),
+          job,
+          bio: makeBio(name, gender, job),
+          familyRelation: "与原生家庭在婚恋与责任观上偶有冲突。",
+          keyEvents: ["经历过一次职业机会错失", "在亲密关系中处理过分工不均"],
+          values: {
+            familyMarriage: "mixed",
+            fairness: "opportunity",
+            reform: "moderate",
+          },
+          socialRole: "职场人/家庭成员",
+          powerFeeling: "balanced",
+          desireAndPressure: "想要稳定又希望突破现实约束。",
+          conflictHooks: ["关键事件：是否接受不公平但高收益机会"],
+          stance: "center",
+          survivalTask: "在现实约束下维护身心稳定与发展机会",
+          stats: {
+            health: randomInt(45, 95),
+            reputation: randomInt(-45, 55),
+            wealth: randomInt(-20, 80),
+            rightsLevel: pickLevel(),
+            riskLevel: pickLevel(),
+          },
+          survivalProgress: randomInt(45, 75),
+        },
+        idx
+      )
+    );
+  });
+  return rows;
 }
 
-function scoreToLevel(score) {
-  if (score >= 2) return "high";
-  if (score <= 0) return "low";
-  return "mid";
+function buildPlayerFromSeed(seed, idx) {
+  const gender = seed?.gender === "female" ? "female" : "male";
+  const name = String(seed?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`);
+  const job = String(seed?.job || "职场人");
+
+  return {
+    id: `p${idx + 1}`,
+    name,
+    gender,
+    genderIdentity: String(seed?.genderIdentity || (gender === "male" ? "顺性别男性" : "顺性别女性")),
+    age: utils.clamp(Number(seed?.age || randomInt(22, 39)), 20, 45),
+    job,
+    cityTier: String(seed?.cityTier || "二线"),
+    classLevel: String(seed?.classLevel || "工薪"),
+    bio: String(seed?.bio || makeBio(name, gender, job)).slice(0, 80),
+    familyRelation: String(seed?.familyRelation || "家庭关系中等紧张，存在代际分歧。"),
+    keyEvents: Array.isArray(seed?.keyEvents) ? seed.keyEvents.slice(0, 3) : [],
+    values: seed?.values || {
+      familyMarriage: "mixed",
+      fairness: "opportunity",
+      reform: "moderate",
+    },
+    socialRole: String(seed?.socialRole || "职场人/家庭成员"),
+    powerFeeling: String(seed?.powerFeeling || "balanced"),
+    desireAndPressure: String(seed?.desireAndPressure || "在现实压力与自我选择中反复拉扯。"),
+    conflictHooks: Array.isArray(seed?.conflictHooks) ? seed.conflictHooks.slice(0, 3) : [],
+    stance: String(seed?.stance || "center"),
+    survivalTask: String(seed?.survivalTask || "维持生存并争取更公平的制度空间"),
+    stats: {
+      health: utils.clamp(Number(seed?.stats?.health || randomInt(45, 95)), 10, 100),
+      reputation: utils.clamp(Number(seed?.stats?.reputation || randomInt(-45, 55)), -100, 100),
+      wealth: Number(seed?.stats?.wealth ?? randomInt(-20, 80)),
+      rightsLevel: ["low", "mid", "high"].includes(seed?.stats?.rightsLevel)
+        ? seed.stats.rightsLevel
+        : pickLevel(),
+      riskLevel: ["low", "mid", "high"].includes(seed?.stats?.riskLevel)
+        ? seed.stats.riskLevel
+        : pickLevel(),
+    },
+    survivalProgress: utils.clamp(Number(seed?.survivalProgress || randomInt(45, 75)), 0, 100),
+    counselingUsed: 0,
+    items: [],
+    marriedTo: null,
+    intimacy: 0,
+    sharedWealthId: null,
+    alive: true,
+    lastDelta: {},
+  };
 }
 
 export function applyEffects(state, playerId, effects) {
@@ -125,12 +185,6 @@ export function applyEffects(state, playerId, effects) {
   if (self.wealth) {
     applyWealthDelta(state, player, self.wealth);
   }
-
-  const rightsScore = levelToScore(player.stats.rightsLevel) + (self.rightsLevelShift || 0);
-  player.stats.rightsLevel = scoreToLevel(utils.clamp(rightsScore, 0, 2));
-
-  const riskScore = levelToScore(player.stats.riskLevel) + (self.riskLevelShift || 0);
-  player.stats.riskLevel = scoreToLevel(utils.clamp(riskScore, 0, 2));
 
   player.survivalProgress = utils.clamp(
     player.survivalProgress + ((effects.meta && effects.meta.survivalProgress) || 0),
@@ -256,6 +310,23 @@ export function logRoundDecision(state, entry) {
   state.roundDecisionLog.push(entry);
 }
 
+export function markPlayersLinkedByPvp(state, idA, idB) {
+  if (!idA || !idB || idA === idB) return;
+  if (!state.acquaintances || typeof state.acquaintances !== "object") {
+    state.acquaintances = {};
+  }
+
+  state.acquaintances[idA] = Array.isArray(state.acquaintances[idA]) ? state.acquaintances[idA] : [];
+  state.acquaintances[idB] = Array.isArray(state.acquaintances[idB]) ? state.acquaintances[idB] : [];
+
+  if (!state.acquaintances[idA].includes(idB)) {
+    state.acquaintances[idA].push(idB);
+  }
+  if (!state.acquaintances[idB].includes(idA)) {
+    state.acquaintances[idB].push(idA);
+  }
+}
+
 export function consumeRoundDecisionLog(state, round) {
   const rows = state.roundDecisionLog.filter((x) => x.round === round);
   state.roundDecisionLog = state.roundDecisionLog.filter((x) => x.round !== round);
@@ -299,8 +370,9 @@ export function advanceTurn(state) {
 
 export function checkWinOrLose(state) {
   const aliveCount = state.players.filter((p) => p.alive).length;
-  const success = aliveCount >= 2 && state.socialGap < 5;
-  const failedByRound = state.round > state.maxRound;
+  const reachedFinal = state.round > state.maxRound;
+  const success = reachedFinal && aliveCount >= 2 && state.socialGap < 5;
+  const failedByRound = reachedFinal && !success;
   const allDead = aliveCount === 0;
 
   if (success) {

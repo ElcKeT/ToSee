@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_e420f78b9844",
+  "createdAt": "2026-04-20T09:18:44.040Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::23::关怀的义务",
+    "sectionIndex": 23,
+    "heading": "关怀的义务",
+    "startLine": 1201,
+    "charCount": 1263
+  },
+  "themes": {
+    "canonical": [
+      "育儿责任",
+      "情绪劳动",
+      "代际边界",
+      "舆论双标"
+    ],
+    "raw": [
+      "母职污名",
+      "照护劳动",
+      "情绪劳动",
+      "育儿责任",
+      "身体边界与同意"
+    ]
+  },
+  "title": "当‘后悔成为母亲’被当作失职的证据",
+  "conflictCore": "一位母亲因表达对自己生育选择的悔意，被社会服务机构视为潜在危险，被迫证明自己仍具备‘合格母亲’的关怀能力。",
+  "storyBlueprint": {
+    "background": "一位女性在与孩子父亲离异后独自承担主要育儿责任。她曾公开表达过对成为母亲的复杂感受，包括后悔。这种情绪被幼教机构工作人员察觉并上报，触发了社会服务系统的干预。",
+    "trigger": "她在与幼儿园护士交谈时坦言‘有时后悔生孩子’，对方立即联系社工，并以‘评估母亲职责’为由启动强制报到程序，威胁要带走孩子。",
+    "escalation": "社工频繁家访，要求她签署行为承诺书，并质疑她争取探视权的动机——尽管她是为了保护孩子安全，却被解读为‘过度控制’或‘情绪不稳定’。她陷入既要证明自己关爱孩子、又不能显得‘太情绪化’的两难。",
+    "dilemma": "她必须在‘压抑真实情绪以符合社会对母亲无私奉献的期待’与‘诚实表达内心挣扎却面临失去孩子监护权的风险’之间做出选择。",
+    "decisionFrames": [
+      {
+        "label": "顺从监控，隐藏情绪",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时保住监护权，但长期压抑自我，加剧心理负担",
+        "longTermImpact": "强化‘母亲必须完美无缺’的社会规范，削弱女性表达真实情感的空间"
+      },
+      {
+        "label": "公开抗争，主张情感自主",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能激化与社工对立，增加失去孩子的风险",
+        "longTermImpact": "推动社会重新审视‘母职=无条件牺牲’的刻板印象，为其他母亲争取情感表达权"
+      }
+    ],
+    "endingDirections": [
+      "她选择配合监管并沉默，孩子留在身边，但内心持续痛苦，形成情感隔离",
+      "她联合其他有类似经历的母亲发起倡导，促使机构修订评估标准，承认母亲的情感复杂性"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "苏茜/欧德雅",
+        "target": "单亲母亲、非传统家庭结构中的主要照护者"
+      },
+      {
+        "source": "社工/幼教护士",
+        "target": "儿童保护系统工作人员、教育机构观察员"
+      }
+    ],
+    "modernization": [
+      "将场景设定为一线城市双职工家庭，母亲在职场与育儿间挣扎",
+      "引入社交媒体舆论压力：她的言论被断章取义传播，引发网络暴力"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘成实际施暴者或精神疾病患者",
+      "不暗示孩子确实处于危险中，聚焦制度性误解而非个体恶意"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "court",
+      "social_service"
+    ],
+    "relationshipHints": [
+      "divorced",
+      "single_parent",
+      "co_parenting"
+    ],
+    "conflictHooks": [
+      "‘我只是累了，不是不爱孩子’",
+      "为什么父亲说同样的话没人管？",
+      "爱孩子就必须假装从不后悔吗？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.91,
+    "qualityScore": 92,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 805,
+    "prompt_tokens": 1755,
+    "total_tokens": 2560,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

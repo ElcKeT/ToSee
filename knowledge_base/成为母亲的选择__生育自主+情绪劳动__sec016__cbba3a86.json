@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_d0ce6e42475d",
+  "createdAt": "2026-04-20T09:16:30.231Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::16::醒悟时刻",
+    "sectionIndex": 16,
+    "heading": "醒悟时刻",
+    "startLine": 817,
+    "charCount": 4564
+  },
+  "themes": {
+    "canonical": [
+      "生育自主",
+      "情绪劳动",
+      "心理健康",
+      "性别刻板印象"
+    ],
+    "raw": [
+      "生育自主",
+      "情绪劳动",
+      "心理健康",
+      "性别刻板印象",
+      "舆论双标"
+    ]
+  },
+  "title": "成为母亲后的醒悟：当‘应该幸福’变成无法言说的重负",
+  "conflictCore": "女性意识到成为母亲是人生错误，却因社会期待压抑真实感受，陷入自我谴责与身份认同危机。",
+  "storyBlueprint": {
+    "background": "一位女性在生育后逐渐意识到自己并不想成为母亲，但社会普遍将母职视为女性必然归宿，她的真实感受被误读为产后抑郁或暂时情绪波动。",
+    "trigger": "孩子出生后，她开始体验到持续的焦虑、空虚与被困住的感觉，而非预期的幸福感；周围人不断强调‘时间会治愈一切’，使她怀疑自己的判断。",
+    "escalation": "她尝试向亲友表达后悔，却被贴上‘不正常’‘自私’的标签；医生建议心理治疗，却无人承认‘不想当母亲’本身可能是合理选择。",
+    "dilemma": "她必须在‘诚实面对自我’与‘维持社会认可的好母亲形象’之间做出抉择——说出真相可能失去支持系统，沉默则加剧精神痛苦。",
+    "decisionFrames": [
+      {
+        "label": "公开承认后悔，寻求理解与支持",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇孤立、污名化，甚至影响亲子关系",
+        "longTermImpact": "打破沉默循环，推动社会对母职多样性的认知，保护未来女性的生育自主权"
+      },
+      {
+        "label": "压抑感受，继续扮演‘合格母亲’角色",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "维持表面和谐，获得社会认可与家庭支持",
+        "longTermImpact": "长期情绪耗竭，可能引发更严重的心理问题，并强化‘母亲必须牺牲’的刻板叙事"
+      }
+    ],
+    "endingDirections": [
+      "她找到少数能理解她的群体，开始重新定义母亲身份的意义，不再以牺牲自我为代价",
+      "她选择沉默，但内心持续挣扎，直到孩子成年后才敢谈论这段经历，警示他人慎重对待生育决定"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "欧德雅、海伦等个案",
+        "target": "城市职场女性、高知母亲、非宗教背景育龄女性"
+      },
+      {
+        "source": "宗教家庭 vs 世俗家庭",
+        "target": "传统育儿观念持有者 vs 独立自主型女性"
+      }
+    ],
+    "modernization": [
+      "将‘产假结束返工’设为关键转折点，突出职场与育儿双重压力",
+      "引入社交媒体语境：朋友圈晒娃文化加剧‘我不正常’的错觉",
+      "用‘母职惩罚’‘情绪劳动隐形化’等当代概念替代旧有表述"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为冷漠或虐待倾向，聚焦情感矛盾而非行为失控",
+      "不鼓励极端表述如‘孩子是错误’，改为‘成为母亲是我人生的错误选择’",
+      "禁止暗示所有母亲都应后悔，强调个体差异与选择自由"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "workplace",
+      "therapy_session"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "当她说‘我不想要这个孩子’，丈夫回答：‘你只是太累了，休息就好’",
+      "朋友安慰：‘每个妈妈都这么想，忍忍就过去了’——但她知道不一样",
+      "医生诊断为轻度抑郁，开药却不问：‘你有没有想过，也许你根本不想当妈？’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.91,
+    "qualityScore": 92,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 873,
+    "prompt_tokens": 4336,
+    "total_tokens": 5209,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

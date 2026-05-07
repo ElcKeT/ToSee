@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_842402e67803",
+  "createdAt": "2026-04-20T09:12:25.697Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::3::本书概要",
+    "sectionIndex": 3,
+    "heading": "本书概要",
+    "startLine": 101,
+    "charCount": 1631
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "舆论双标"
+    ],
+    "raw": [
+      "社会期待女性成为母亲",
+      "后悔成为母亲的正当性争议",
+      "母职被建构为女性完整性的象征",
+      "公开表达母职后悔的舆论压制",
+      "母职作为关系而非角色的重新定义"
+    ]
+  },
+  "title": "当‘母亲’成为社会强加的圆满承诺",
+  "conflictCore": "社会将母职描绘为女性必然且圆满的人生选择，而个体母亲却在承担母职后产生深刻后悔，却被迫沉默。",
+  "storyBlueprint": {
+    "background": "在一个强调家庭价值的社会中，女性普遍被期待在适当时机成为母亲。媒体、亲友和政策不断传递‘成为母亲是女性自然归宿’的信息，同时将不生育或后悔生育视为异常甚至道德缺陷。",
+    "trigger": "一位女性在完成生育后，并未感受到社会承诺的‘圆满感’，反而长期陷入疲惫、失落与自我怀疑，开始质疑自己是否真的‘想要’这个孩子。",
+    "escalation": "她尝试向亲友倾诉自己的矛盾情绪，却被指责‘不配做母亲’或‘会伤害孩子’；当她看到其他母亲公开表达幸福时，更感孤立。社会舆论将她的感受病理化，认为是个体心理问题而非结构压迫。",
+    "dilemma": "她是否应该继续压抑真实感受以维持‘好母亲’形象，还是冒险说出后悔，可能面临家庭关系破裂与社会污名？",
+    "decisionFrames": [
+      {
+        "label": "保持沉默，扮演完美母亲",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "维持家庭表面和谐，避免冲突",
+        "longTermImpact": "情绪持续压抑，可能导致抑郁或亲子关系疏离"
+      },
+      {
+        "label": "公开表达后悔，寻求理解",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇指责、孤立或被剥夺育儿话语权",
+        "longTermImpact": "推动社会对母职真实代价的认知，为其他女性创造表达空间"
+      }
+    ],
+    "endingDirections": [
+      "她选择匿名加入母亲支持团体，在安全空间中分享真实感受，逐渐重建自我认同",
+      "她因压力过大退出职场并减少社交，陷入长期心理困扰，后悔感加深但无处诉说"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "书中受访者",
+        "target": "都市中产母亲、新手妈妈、高学历全职主妇等可替换角色原型"
+      }
+    ],
+    "modernization": [
+      "将‘社会期待’具体化为社交媒体上的‘晒娃文化’、职场中的母职惩罚、亲友间的催育压力",
+      "引入心理咨询、线上社群、性别平等政策等当代支持系统作为背景元素"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为‘怨恨孩子’或‘抛弃家庭’的极端形象",
+      "不暗示所有母亲都后悔，而是强调‘后悔是合理且常见的复杂情绪’"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture",
+      "workplace"
+    ],
+    "relationshipHints": [
+      "married",
+      "single"
+    ],
+    "conflictHooks": [
+      "‘如果你现在不生孩子，以后一定会后悔’——这句话如何成为情感绑架？",
+      "当母亲说‘我不快乐’，为什么会被解读为‘我不爱我的孩子’？",
+      "社会如何把母职从一种选择变成一种道德义务？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.91,
+    "qualityScore": 92,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 831,
+    "prompt_tokens": 2096,
+    "total_tokens": 2927,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_a1fdc04b35bc",
+  "createdAt": "2026-04-20T09:21:01.243Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::29::第五章",
+    "sectionIndex": 29,
+    "heading": "第五章",
+    "startLine": 1657,
+    "charCount": 1764
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "育儿责任",
+      "情绪劳动",
+      "舆论双标"
+    ],
+    "raw": [
+      "母亲身份的社会期待",
+      "情绪表达的禁忌",
+      "母职污名化",
+      "个人感受与公共评判的冲突"
+    ]
+  },
+  "title": "当母亲说出后悔：沉默的权利还是表达的自由？",
+  "conflictCore": "一位母亲在公开表达对自己生育选择的后悔后，面临社会强烈谴责与情感孤立，引发关于母职真实感受是否可被言说、被接纳的根本矛盾。",
+  "storyBlueprint": {
+    "background": "一位中年女性，已有成年子女，长期压抑自己对成为母亲这一选择的复杂情绪。她成长于强调‘母爱天生’的社会环境，周围人普遍认为母亲应无条件幸福与满足。",
+    "trigger": "她在匿名网络文章中坦承自己后悔生育，并描述多年育儿带来的失落与自我牺牲感，文章意外引发广泛传播和激烈评论。",
+    "escalation": "网友人肉搜索并曝光其身份，指责她自私冷酷、伤害子女；亲友疏远，伴侣虽未离婚但关系紧张；她开始收到恐吓私信，并被排除在原有社交圈之外。",
+    "dilemma": "她是否应该继续发声以推动对母职真实体验的讨论，还是彻底沉默以保护家庭关系与个人安全？",
+    "decisionFrames": [
+      {
+        "label": "坚持表达立场",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能失去亲友支持，面临网络暴力，子女心理受冲击",
+        "longTermImpact": "推动社会正视母职复杂性，为其他母亲创造表达空间，挑战‘完美母亲’神话"
+      },
+      {
+        "label": "回归沉默妥协",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时恢复表面和谐，避免进一步冲突，保护家庭隐私",
+        "longTermImpact": "强化母职必须隐忍的刻板印象，压抑真实情绪可能导致心理健康恶化，子女未来或重复情感压抑模式"
+      }
+    ],
+    "endingDirections": [
+      "她成立匿名支持社群，帮助其他母亲安全分享感受，逐渐形成去污名化运动",
+      "她删除所有言论并公开道歉，重新扮演‘慈母’角色，但内心持续疏离与抑郁"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "伊莎贝拉·达顿",
+        "target": "一位有成年子女的城市中产母亲"
+      },
+      {
+        "source": "英国/德国网络评论",
+        "target": "社交媒体上的匿名用户群体"
+      }
+    ],
+    "modernization": [
+      "将传统媒体文章改为小红书/微博长文或播客访谈",
+      "网络暴力形式包括私信辱骂、截图传播、职场歧视等",
+      "支持系统可设定为线上匿名互助群或心理咨询渠道"
+    ],
+    "safetyBoundaries": [
+      "避免使用‘自私’‘冷酷’等标签化语言直接评价母亲",
+      "不渲染子女‘被退货’等极端比喻",
+      "禁止暗示母亲应因表达后悔而遭受惩罚"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married",
+      "mother"
+    ],
+    "conflictHooks": [
+      "如果连后悔都不能说，那母亲的痛苦算什么？",
+      "说出真相会毁掉孩子，还是隐瞒真相才更伤人？",
+      "社会只允许母亲快乐，不允许她疲惫吗？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 798,
+    "prompt_tokens": 2141,
+    "total_tokens": 2939,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

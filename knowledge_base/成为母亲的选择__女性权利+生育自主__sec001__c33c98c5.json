@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_4975a0fa52f0",
+  "createdAt": "2026-04-20T09:11:53.971Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::1::引⾔",
+    "sectionIndex": 1,
+    "heading": "引⾔",
+    "startLine": 1,
+    "charCount": 3963
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "性别刻板印象"
+    ],
+    "raw": [
+      "后悔成为母亲",
+      "社会对母职的期待",
+      "女性自主权",
+      "母职神话",
+      "生育压力"
+    ]
+  },
+  "title": "成为母亲，是选择还是义务？",
+  "conflictCore": "女性在社会期待与个人意愿之间，面临是否成为母亲的两难抉择，而后悔情绪被系统性压抑。",
+  "storyBlueprint": {
+    "background": "一位成年女性成长于强调家庭价值与母职神圣的社会环境中，亲友、媒体与文化持续传递‘每个女人都应成为母亲’的信念。她本人对生育并无强烈渴望，但因年龄增长、伴侣期待或家庭压力，开始怀疑自己是否‘正常’。",
+    "trigger": "在一次家庭聚会中，长辈当众断言：‘你绝对会后悔没有生孩子！’这句话引发她内心长期压抑的困惑与焦虑，促使她重新审视自己的人生选择。",
+    "escalation": "她尝试向朋友倾诉犹豫，却被贴上‘自私’‘冷漠’的标签；查阅资料时发现，几乎没有任何公共讨论承认‘母亲可能后悔’，相关情绪被视为禁忌。她开始怀疑：如果连后悔都不能说，那真实的痛苦该如何安放？",
+    "dilemma": "她必须在‘顺从社会期待成为母亲以换取认可’与‘坚持自我但承受孤独与污名’之间做出选择——而无论选哪条路，都可能陷入持久的心理挣扎。",
+    "decisionFrames": [
+      {
+        "label": "选择生育以符合社会规范",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得家庭认可与社会接纳，避免被指责为‘不正常’",
+        "longTermImpact": "可能陷入长期压抑与隐性后悔，影响心理健康；强化‘母职天职’的刻板印象"
+      },
+      {
+        "label": "拒绝生育以守护自我边界",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临亲友疏离、舆论压力与情感孤立",
+        "longTermImpact": "保有身体与人生自主权，推动社会对多元女性角色的认知"
+      }
+    ],
+    "endingDirections": [
+      "她选择不生育，并通过写作或社群发声，挑战‘母职必然性’的叙事，逐渐找到同类支持",
+      "她选择生育，但持续经历内心冲突，最终在一次心理咨询中首次说出‘我后悔了’，开启自我疗愈之路"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "以色列/德国等具体国家",
+        "target": "高生育率或低生育率社会背景"
+      },
+      {
+        "source": "研究者身份",
+        "target": "普通女性个体或匿名叙述者"
+      },
+      {
+        "source": "学术期刊《标志》",
+        "target": "公共媒体平台或社交媒体讨论"
+      }
+    ],
+    "modernization": [
+      "将传统家庭压力转化为职场晋升中的‘婚育期待’、社交媒体上的‘晒娃文化’等当代语境",
+      "引入女性在职场与育儿间被迫二选一的现实困境，增强现实共鸣"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔母亲’描绘为情绪失控或反社会人格",
+      "不鼓励极端表述如‘所有母亲都痛苦’或‘生育即压迫’，保持对复杂经验的尊重"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family|culture|social media"
+    ],
+    "relationshipHints": [
+      "single|married|all"
+    ],
+    "conflictHooks": [
+      "‘如果你不生，以后会后悔’——这句话真的来自关心，还是隐形控制？",
+      "当整个社会只允许母亲表达爱，不允许表达悔，谁在保护她们的真实？",
+      "一个女人的价值，是否必须通过成为母亲来证明？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 94,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 874,
+    "prompt_tokens": 4057,
+    "total_tokens": 4931,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

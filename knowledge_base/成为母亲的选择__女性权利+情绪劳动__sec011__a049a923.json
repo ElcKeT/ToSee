@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_d1a7f81a81f9",
+  "createdAt": "2026-04-20T09:15:05.719Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::11::第三章",
+    "sectionIndex": 11,
+    "heading": "第三章",
+    "startLine": 511,
+    "charCount": 412
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "情绪劳动",
+      "心理健康",
+      "育儿责任"
+    ],
+    "raw": [
+      "母亲身份的社会期待",
+      "后悔的情感禁忌",
+      "母职的情感压抑"
+    ]
+  },
+  "title": "当我说出“后悔当妈妈”时，全世界都沉默了",
+  "conflictCore": "一位母亲在内心挣扎多年后终于承认后悔生育，却面临社会对母职必须无怨无悔的期待压力",
+  "storyBlueprint": {
+    "background": "一位中年女性养育三个孩子多年，长期独自承担育儿与家务压力，内心逐渐积累对母职选择的怀疑与痛苦",
+    "trigger": "在一次亲友聚会中，她酒后失控说出‘我后悔当妈妈’，引发全场震惊与指责",
+    "escalation": "家人认为她伤害孩子感情，朋友疏远她，社交媒体上有人认出她并公开谴责‘不配做母亲’",
+    "dilemma": "她是否该继续压抑真实感受以维持家庭表面和谐，还是坚持表达自我以寻求心理解脱？",
+    "decisionFrames": [
+      {
+        "label": "沉默以保护家庭稳定",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时避免冲突，维持亲子关系表象",
+        "longTermImpact": "情绪持续压抑，可能导致抑郁或关系更深层破裂"
+      },
+      {
+        "label": "公开寻求理解与支持",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临社会谴责与家庭矛盾激化",
+        "longTermImpact": "打破母职神话，推动对女性真实情感的正视与包容"
+      }
+    ],
+    "endingDirections": [
+      "她选择加入匿名母亲支持团体，在安全空间里倾诉，逐渐重建自我认同",
+      "她被迫公开道歉并‘改正态度’，但内心更加孤立，开始出现心理问题"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "斯凯（有三个孩子）",
+        "target": "一位35-45岁、育有未成年子女的城市母亲"
+      }
+    ],
+    "modernization": [
+      "将聚会场景改为家庭微信群或短视频直播评论区，放大舆论压力",
+      "引入心理咨询、女性社群等当代支持系统作为潜在出路"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为‘冷漠’或‘不爱孩子’，强调情感复杂性而非道德缺陷",
+      "不鼓励极端自我牺牲或彻底断绝亲子关系的表述"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married"
+    ],
+    "conflictHooks": [
+      "当爱变成负担，还能说出口吗？",
+      "社会允许母亲快乐，但不允许她后悔"
+    ]
+  },
+  "quality": {
+    "confidence": 0.91,
+    "qualityScore": 92,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 642,
+    "prompt_tokens": 1069,
+    "total_tokens": 1711,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_26352447a183",
+  "createdAt": "2026-04-20T09:17:41.296Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::21::⺟亲⾝份作为⼀种创伤经验",
+    "sectionIndex": 21,
+    "heading": "⺟亲⾝份作为⼀种创伤经验",
+    "startLine": 1123,
+    "charCount": 1937
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "心理健康",
+      "代际边界",
+      "情绪劳动"
+    ],
+    "raw": [
+      "母亲身份作为创伤经验",
+      "社会对母职的浪漫化",
+      "心理创伤的长期影响",
+      "女性自我丧失",
+      "后悔生育"
+    ]
+  },
+  "title": "成为母亲：被否认的创伤与沉默的哀悼",
+  "conflictCore": "社会将母职塑造为神圣幸福的必然人生阶段，而个体女性在经历生育后却承受深层心理创伤与自我丧失，却被迫沉默并内化痛苦。",
+  "storyBlueprint": {
+    "background": "一位女性在生育后长期经历失眠、闪回、情绪崩溃和身份断裂感，她意识到成为母亲的过程不仅没有带来期待中的圆满，反而触发或加剧了原有的心理创伤。她试图向外界表达这种痛苦，但发现社会普遍将母职视为自然、喜悦且不可质疑的选择。",
+    "trigger": "孩子在夜间哭闹时，她突然被带回分娩时的痛苦记忆，情绪彻底失控，开始质疑自己是否真的‘适合做母亲’。",
+    "escalation": "她向亲友倾诉自己的创伤感受，却被安慰‘所有妈妈都这样’‘你会习惯的’，甚至被指责‘不够爱孩子’。她开始怀疑自己的感受是否合理，陷入孤立与自我否定。",
+    "dilemma": "她面临两难：是继续压抑真实感受、扮演社会期待中的‘幸福母亲’，还是承认母职带来的创伤并寻求心理支持——但后者可能让她被视为‘不合格的母亲’甚至失去社会认同。",
+    "decisionFrames": [
+      {
+        "label": "隐藏痛苦，维持表面和谐",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "避免冲突，维持家庭与社会形象",
+        "longTermImpact": "心理创伤持续累积，可能导致抑郁或亲子关系疏离"
+      },
+      {
+        "label": "公开承认创伤，寻求专业帮助",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇误解、污名化或被质疑育儿能力",
+        "longTermImpact": "开启疗愈之路，推动对母职创伤的社会认知"
+      }
+    ],
+    "endingDirections": [
+      "她选择沉默，日复一日扮演‘好妈妈’，但内心逐渐麻木，与孩子之间形成情感隔阂。",
+      "她在匿名社群中找到共鸣，开始接受心理治疗，并逐渐学会区分‘母亲’角色与‘自我’的边界，重建内在完整性。"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "索菲娅、森妮等受访者",
+        "target": "城市职场女性/新手母亲/高敏感人群"
+      },
+      {
+        "source": "网络论坛‘不想生孩子的女人’",
+        "target": "女性心理健康社群或匿名倾诉平台"
+      }
+    ],
+    "modernization": [
+      "将产后创伤置于当代都市高压生活背景下，如职场中断、育儿焦虑、社交媒体上的‘完美妈妈’形象对比",
+      "引入心理咨询资源可及性、产假制度不足、伴侣支持缺失等现实因素"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为‘恨孩子’或‘精神失常’，强调创伤反应不等于失职",
+      "不渲染极端自残或暴力倾向，聚焦心理挣扎与社会结构性压迫"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "mental health clinic",
+      "online community"
+    ],
+    "relationshipHints": [
+      "married",
+      "single mother",
+      "co-parenting"
+    ],
+    "conflictHooks": [
+      "当社会赞美‘为母则刚’时，谁来倾听那些‘为母则伤’的声音？",
+      "如果爱孩子就必须否认自己的痛苦，这种爱是否健康？",
+      "创伤可以被纪念，但母职创伤为何必须被遗忘？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 90,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 872,
+    "prompt_tokens": 2261,
+    "total_tokens": 3133,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_bc73a12bfff4",
+  "createdAt": "2026-04-20T09:14:17.535Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::9::好妈妈、坏妈妈",
+    "sectionIndex": 9,
+    "heading": "好妈妈、坏妈妈",
+    "startLine": 389,
+    "charCount": 4940
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "情绪劳动",
+      "性别刻板印象",
+      "舆论双标"
+    ],
+    "raw": [
+      "母职期待",
+      "情感表演",
+      "社会规训",
+      "身份标签",
+      "情绪劳动",
+      "性别刻板印象"
+    ]
+  },
+  "title": "好妈妈还是真自我？",
+  "conflictCore": "社会强加‘完美母亲’模板与女性真实情感体验之间的撕裂，迫使母亲在‘表演母爱’与‘表达自我’之间做出抉择。",
+  "storyBlueprint": {
+    "background": "一位女性成为母亲后，被社会期待塑造成无私奉献、时刻充满爱意、外貌得体且情绪稳定的‘好妈妈’。她努力履行育儿责任，但内心常感疲惫、疏离甚至后悔，却不敢表达真实感受。",
+    "trigger": "亲友或公众场合中，有人询问‘当妈妈是不是很幸福’，她被迫强颜欢笑回应，内心却充满矛盾。",
+    "escalation": "她开始意识到自己长期压抑真实情绪，只为符合‘好妈妈’标准；同时发现其他母亲也在私下承认类似‘表演式母爱’。外界一旦察觉母亲流露负面情绪，便迅速贴上‘坏妈妈’标签。",
+    "dilemma": "是继续压抑自我、维持‘好妈妈’人设以换取社会接纳，还是勇敢表达真实感受，哪怕面临道德指责与身份质疑？",
+    "decisionFrames": [
+      {
+        "label": "维持表演，迎合期待",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得社会认可与家庭和谐，但加剧内心压抑与情感耗竭",
+        "longTermImpact": "强化性别刻板印象，阻碍母亲群体真实声音被听见，可能影响下一代对母职的认知"
+      },
+      {
+        "label": "表达真实，挑战规范",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇舆论批评、家庭冲突或被贴上‘坏妈妈’标签",
+        "longTermImpact": "推动社会重新定义母职，促进情绪表达自由，为其他母亲创造更安全的话语空间"
+      }
+    ],
+    "endingDirections": [
+      "她选择沉默，继续扮演‘好妈妈’，但逐渐与孩子产生情感隔阂；",
+      "她在支持性社群中分享真实感受，引发讨论，促使更多人反思母职神话"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "提尔纱、斯凯、娜奥米等受访者",
+        "target": "普通母亲/祖母角色原型"
+      },
+      {
+        "source": "祖父母探望孙辈",
+        "target": "节日家庭聚会、家长会、亲子活动等场景"
+      }
+    ],
+    "modernization": [
+      "将‘性感辣妈’广告转化为社交媒体上的‘完美妈妈’人设展示",
+      "用短视频平台、母婴博主评论区替代传统亲友闲谈作为舆论压力来源"
+    ],
+    "safetyBoundaries": [
+      "避免将‘坏妈妈’等同于虐待或忽视儿童的实际行为",
+      "不鼓励极端自我牺牲或彻底拒绝母职的表述，聚焦于情感真实性与社会压力的张力"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "‘我只是想安静读本书，为什么连这都成了奢望？’",
+      "‘我说累，他们却说我不知足’",
+      "‘我演了十年好妈妈，现在连自己是谁都忘了’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 812,
+    "prompt_tokens": 4689,
+    "total_tokens": 5501,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

@@ -1,4 +1,8 @@
 import {
+  buildCharacterInitPrompt,
+  buildCultureCounselingPrompt,
+  buildCultureLibraryPrompt,
+  buildCultureSquarePrompt,
   buildCourtPrompt,
   buildRelationshipPrompt,
   buildRoundEvaluationPrompt,
@@ -18,25 +22,85 @@ function extractJson(text) {
   }
 }
 
+let llmReqSeq = 0;
+
+const PRESET_MANIFEST_PATH = "knowledge_base/manifest.ndjson";
+const PRESET_MIX_CONFIG = {
+  baseProbability: 0.35,
+  minProbability: 0.15,
+  maxProbability: 0.75,
+  lowConflictWeight: 0.25,
+  stagnationWeight: 0.2,
+  repetitionPenalty: 0.22,
+};
+
+const CONFLICT_TAGS = new Set(["💼", "🏠", "🗣️", "⚖️", "🎲"]);
+
+let presetCachePromise = null;
+const presetUseHistory = [];
+
+function nextLlmReqId() {
+  llmReqSeq += 1;
+  return `fe_${Date.now()}_${llmReqSeq}`;
+}
+
 async function callServerLlm(prompt) {
-  const response = await fetch("/api/llm", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-  });
+  const reqId = nextLlmReqId();
+  const startedAt = performance.now();
+  const timeoutMs = 120000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`后端模型代理调用失败: ${response.status} ${errText}`);
-  }
+  console.log(`[llm-client][${reqId}] start promptChars=${prompt.length} timeoutMs=${timeoutMs}`);
 
-  const data = await response.json();
-  if (!data?.ok) {
-    throw new Error(data?.error || "后端模型代理返回失败");
+  try {
+    const response = await fetch("/api/llm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(
+        `[llm-client][${reqId}] failed status=${response.status} ms=${Math.round(
+          performance.now() - startedAt
+        )} body=${errText}`
+      );
+      throw new Error(`后端模型代理调用失败: ${response.status} ${errText}`);
+    }
+
+    const data = await response.json();
+    if (!data?.ok) {
+      console.error(
+        `[llm-client][${reqId}] failed logical ms=${Math.round(
+          performance.now() - startedAt
+        )} error=${data?.error || "unknown"} reqId=${data?.reqId || "-"}`
+      );
+      throw new Error(data?.error || "后端模型代理返回失败");
+    }
+
+    console.log(
+      `[llm-client][${reqId}] success ms=${Math.round(performance.now() - startedAt)} hasData=${Boolean(data?.data)}`
+    );
+    return data.data;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      console.error(`[llm-client][${reqId}] abort timeoutMs=${timeoutMs}`);
+      throw new Error(`后端模型代理超时(${timeoutMs}ms)`);
+    }
+    console.error(
+      `[llm-client][${reqId}] exception ms=${Math.round(performance.now() - startedAt)} error=${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  return data.data;
 }
 
 function clamp(value, min, max) {
@@ -45,6 +109,552 @@ function clamp(value, min, max) {
 
 function randomFrom(list) {
   return list[Math.floor(Math.random() * list.length)];
+}
+
+function roundTo1(v) {
+  return Math.round(v * 10) / 10;
+}
+
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function parseNdjson(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+function normalizeToken(token) {
+  return String(token || "")
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/[\s_\-]/g, "")
+    .trim();
+}
+
+function splitHintTokens(hintValue) {
+  return String(hintValue || "")
+    .split(/[|,;/、\s]+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function inferSceneKeysFromHints(sceneHints) {
+  const keys = new Set();
+
+  safeArray(sceneHints).forEach((hint) => {
+    splitHintTokens(hint).forEach((raw) => {
+      const t = normalizeToken(raw);
+
+      if (!t) return;
+      if (t.includes("workplace") || t.includes("work") || t.includes("职场")) keys.add("workplace");
+      if (t.includes("family") || t.includes("家庭")) keys.add("family");
+      if (t.includes("opportunity") || t.includes("机遇")) keys.add("opportunity");
+      if (t.includes("court") || t.includes("法庭")) keys.add("court");
+
+      if (t.includes("culture") || t.includes("文化")) keys.add("culture:*");
+      if (t.includes("square") || t.includes("socialmedia") || t.includes("广场") || t.includes("社交")) {
+        keys.add("culture:square");
+      }
+      if (t.includes("library") || t.includes("图书馆") || t.includes("知识")) keys.add("culture:library");
+      if (t.includes("counseling") || t.includes("咨询") || t.includes("修复")) {
+        keys.add("culture:counseling");
+      }
+    });
+  });
+
+  return keys;
+}
+
+function inferRelationshipHints(relationshipHints) {
+  const hints = new Set();
+
+  safeArray(relationshipHints).forEach((hint) => {
+    splitHintTokens(hint).forEach((raw) => {
+      const t = normalizeToken(raw);
+      if (!t) return;
+      if (t.includes("all") || t.includes("全部") || t.includes("通用")) hints.add("all");
+      if (t.includes("single") || t.includes("未婚") || t.includes("单身")) hints.add("single");
+      if (t.includes("married") || t.includes("已婚") || t.includes("婚后")) hints.add("married");
+    });
+  });
+
+  if (hints.size === 0) hints.add("all");
+  return hints;
+}
+
+function eventSceneKey(scene, subScene) {
+  if (scene === "culture") return `culture:${subScene || "square"}`;
+  return scene || "workplace";
+}
+
+function matchPresetToScene(preset, scene, subScene) {
+  const keys = inferSceneKeysFromHints(preset?.promptSeed?.sceneHints);
+  if (keys.size === 0) return true;
+
+  const key = eventSceneKey(scene, subScene);
+  if (keys.has(key)) return true;
+  if (scene === "culture" && keys.has("culture:*")) return true;
+  if (keys.has(scene)) return true;
+  return false;
+}
+
+function matchPresetToRelationship(preset, player) {
+  const rel = player?.marriedTo ? "married" : "single";
+  const hints = inferRelationshipHints(preset?.promptSeed?.relationshipHints);
+  return hints.has("all") || hints.has(rel);
+}
+
+function summarizeConflictSignals(gameState) {
+  const recent = safeArray(gameState?.events).slice(0, 10);
+  const total = recent.length || 1;
+  const conflictCount = recent.filter((e) => CONFLICT_TAGS.has(e?.tag)).length;
+  const conflictDensity = conflictCount / total;
+
+  const openThreads = new Set(
+    recent
+      .filter((e) => e?.thread?.status === "open" && e?.thread?.threadId)
+      .map((e) => e.thread.threadId)
+  );
+
+  const lowConflict = clamp(1 - conflictDensity, 0, 1);
+  const stagnation = openThreads.size === 0 ? 1 : openThreads.size === 1 ? 0.6 : 0.2;
+
+  return {
+    lowConflict,
+    stagnation,
+    openThreads: openThreads.size,
+    conflictDensity: roundTo1(conflictDensity),
+  };
+}
+
+function calcRepetitionPenalty() {
+  const recent = presetUseHistory.slice(-6);
+  if (recent.length < 3) return 0;
+
+  const counter = new Map();
+  recent.forEach((x) => {
+    safeArray(x?.themes).forEach((t) => {
+      counter.set(t, (counter.get(t) || 0) + 1);
+    });
+  });
+
+  if (counter.size === 0) return 0;
+  const maxFreq = Math.max(...counter.values());
+  const ratio = maxFreq / recent.length;
+  return clamp(ratio - 0.35, 0, 1);
+}
+
+function computeDynamicPresetProbability(gameState) {
+  const signal = summarizeConflictSignals(gameState);
+  const repetition = calcRepetitionPenalty();
+  const p =
+    PRESET_MIX_CONFIG.baseProbability +
+    PRESET_MIX_CONFIG.lowConflictWeight * signal.lowConflict +
+    PRESET_MIX_CONFIG.stagnationWeight * signal.stagnation -
+    PRESET_MIX_CONFIG.repetitionPenalty * repetition;
+
+  const probability = clamp(p, PRESET_MIX_CONFIG.minProbability, PRESET_MIX_CONFIG.maxProbability);
+  return {
+    probability,
+    signal: {
+      ...signal,
+      repetition: roundTo1(repetition),
+    },
+  };
+}
+
+function buildPresetCandidateScore(preset, scene, subScene, gameState) {
+  const quality = Number(preset?.quality?.qualityScore || 70);
+  const confidence = Number(preset?.quality?.confidence || 0.7);
+  const sceneMatch = matchPresetToScene(preset, scene, subScene) ? 1 : 0;
+
+  const recentPresetIds = new Set(presetUseHistory.slice(-8).map((x) => x.presetId));
+  const usedPenalty = recentPresetIds.has(preset.presetId) ? 0.28 : 0;
+
+  const recentThemes = presetUseHistory.slice(-6).flatMap((x) => safeArray(x?.themes));
+  const themeOverlap = safeArray(preset?.themes?.canonical).filter((t) => recentThemes.includes(t)).length;
+  const overlapPenalty = Math.min(0.2, themeOverlap * 0.08);
+
+  const roundBoost = gameState?.round >= 6 ? 0.06 : 0;
+
+  return quality / 100 + confidence * 0.2 + sceneMatch * 0.2 + roundBoost - usedPenalty - overlapPenalty;
+}
+
+function weightedPick(items, scoreGetter) {
+  const scored = items
+    .map((item) => ({ item, score: Math.max(0.01, Number(scoreGetter(item) || 0.01)) }))
+    .sort((a, b) => b.score - a.score);
+
+  const total = scored.reduce((sum, x) => sum + x.score, 0);
+  if (total <= 0) return scored[0]?.item || null;
+
+  let r = Math.random() * total;
+  for (const row of scored) {
+    r -= row.score;
+    if (r <= 0) return row.item;
+  }
+  return scored[0]?.item || null;
+}
+
+function buildPresetGuidedPrompt({ basePrompt, preset, scene, subScene, player }) {
+  const digest = {
+    presetId: preset?.presetId,
+    themes: safeArray(preset?.themes?.canonical).slice(0, 4),
+    conflictCore: preset?.conflictCore,
+    storyBlueprint: {
+      background: preset?.storyBlueprint?.background,
+      trigger: preset?.storyBlueprint?.trigger,
+      escalation: preset?.storyBlueprint?.escalation,
+      dilemma: preset?.storyBlueprint?.dilemma,
+      decisionFrames: safeArray(preset?.storyBlueprint?.decisionFrames).slice(0, 3),
+    },
+    adaptationRules: {
+      modernization: safeArray(preset?.adaptationRules?.modernization).slice(0, 4),
+      safetyBoundaries: safeArray(preset?.adaptationRules?.safetyBoundaries).slice(0, 4),
+    },
+    conflictHooks: safeArray(preset?.promptSeed?.conflictHooks).slice(0, 5),
+  };
+
+  return `${basePrompt}
+
+# 预制冲突注入(高优先级)
+本次生成采用“预制冲突引导模式”。你必须在不照抄原文的前提下，将下述冲突骨架改写为当前玩家可体验事件。
+
+当前注入条件:
+- scene=${scene}
+- subScene=${subScene || "none"}
+- player=${player?.name || "unknown"}
+
+预制故事卡摘要(JSON):
+${JSON.stringify(digest, null, 2)}
+
+注入执行规则:
+1) 保留 conflictCore 与 dilemma，不得弱化冲突张力。
+2) 至少两个选项要分别对应不同 decisionFrames 立场。
+3) 必须完成角色替换与时代适配，不得出现书中具体人名、地点、机构名。
+4) 若预制场景与当前scene不完全一致，保持矛盾核心并改写为当前scene可落地事件。
+5) 继续严格遵守上文全部数值与JSON输出约束，只输出JSON。`;
+}
+
+function markPresetUsed(preset, scene, subScene, gameState) {
+  presetUseHistory.push({
+    presetId: preset?.presetId,
+    round: gameState?.round || 0,
+    scene: eventSceneKey(scene, subScene),
+    themes: safeArray(preset?.themes?.canonical),
+  });
+
+  if (presetUseHistory.length > 40) {
+    presetUseHistory.splice(0, presetUseHistory.length - 40);
+  }
+}
+
+function normalizePresetRecord(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!raw.presetId) return null;
+  if (!raw.storyBlueprint || typeof raw.storyBlueprint !== "object") return null;
+
+  return {
+    ...raw,
+    themes: {
+      canonical: safeArray(raw?.themes?.canonical),
+      raw: safeArray(raw?.themes?.raw),
+    },
+    promptSeed: raw.promptSeed || {},
+    quality: raw.quality || {},
+  };
+}
+
+async function loadPresetKnowledgeBase() {
+  if (presetCachePromise) return presetCachePromise;
+
+  presetCachePromise = (async () => {
+    try {
+      const manifestResp = await fetch(PRESET_MANIFEST_PATH, { cache: "no-store" });
+      if (!manifestResp.ok) {
+        console.warn(`[preset] manifest missing status=${manifestResp.status}`);
+        return [];
+      }
+
+      const manifestText = await manifestResp.text();
+      const rows = parseNdjson(manifestText);
+      const files = rows
+        .map((row) => String(row?.file || "").trim())
+        .filter(Boolean)
+        .slice(-500);
+
+      const loaded = await Promise.all(
+        files.map(async (file) => {
+          try {
+            const resp = await fetch(file.startsWith("/") ? file : `/${file}`, { cache: "no-store" });
+            if (!resp.ok) return null;
+            const json = await resp.json();
+            return normalizePresetRecord(json);
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      const presets = loaded.filter(Boolean);
+      console.log(`[preset] loaded ${presets.length} cards from knowledge base`);
+      return presets;
+    } catch (error) {
+      console.warn("[preset] load failed", error);
+      return [];
+    }
+  })();
+
+  return presetCachePromise;
+}
+
+async function chooseSceneGenerationMode({ scene, subScene, player, gameState }) {
+  const presets = await loadPresetKnowledgeBase();
+  const eligible = presets.filter((p) => matchPresetToScene(p, scene, subScene) && matchPresetToRelationship(p, player));
+
+  const dynamic = computeDynamicPresetProbability(gameState);
+  const probability = eligible.length > 0 ? dynamic.probability : 0;
+  const draw = Math.random();
+
+  if (eligible.length === 0 || draw > probability) {
+    return {
+      mode: "creative",
+      probability,
+      draw,
+      signal: dynamic.signal,
+      preset: null,
+      eligibleCount: eligible.length,
+    };
+  }
+
+  const preset = weightedPick(eligible, (p) => buildPresetCandidateScore(p, scene, subScene, gameState));
+  return {
+    mode: preset ? "preset" : "creative",
+    probability,
+    draw,
+    signal: dynamic.signal,
+    preset: preset || null,
+    eligibleCount: eligible.length,
+  };
+}
+
+const MOCK_NAMES = {
+  male: ["周远", "刘承", "韩一舟", "魏启", "程峥", "罗川"],
+  female: ["林岚", "沈禾", "唐知微", "许苒", "江晚", "宋妍"],
+};
+
+const MOCK_JOBS = [
+  "算法工程师",
+  "护士",
+  "中学教师",
+  "外卖骑手",
+  "律师助理",
+  "产品经理",
+  "客服主管",
+  "社区社工",
+];
+
+function pickLevelByScore(score) {
+  if (score >= 0.67) return "high";
+  if (score >= 0.34) return "mid";
+  return "low";
+}
+
+function buildMockCharacter(gender, ageBase, idx) {
+  const name = randomFrom(MOCK_NAMES[gender]);
+  const age = clamp(ageBase + Math.floor(Math.random() * 10) - 4, 22, 39);
+  const rightsScore = Math.random();
+  const riskScore = Math.random();
+  const job = randomFrom(MOCK_JOBS);
+  const cityTier = randomFrom(["一线", "新一线", "二线"]);
+  const classLevel = randomFrom(["工薪", "中产边缘", "普通中产"]);
+  const valuesFamily = randomFrom(["traditional", "autonomous", "mixed"]);
+  const valuesFairness = randomFrom(["result", "opportunity", "freedom"]);
+  const valuesReform = randomFrom(["radical", "moderate", "skeptical"]);
+  return {
+    name: `${name}${idx > 2 ? "" : ""}`,
+    gender,
+    genderIdentity: gender === "male" ? "顺性别男性" : "顺性别女性",
+    age,
+    job,
+    cityTier,
+    classLevel,
+    bio: `${gender === "male" ? "男性" : "女性"}，${age}岁${job}，在${cityTier}城市承受家庭与职业双重压力，立场并不稳定。`.slice(
+      0,
+      80
+    ),
+    familyRelation: "与父母在婚恋与生育观上有持续拉扯，代际沟通紧张。",
+    keyEvents: ["曾因性别刻板印象错失机会", "在亲密关系里经历过权责失衡"],
+    values: {
+      familyMarriage: valuesFamily,
+      fairness: valuesFairness,
+      reform: valuesReform,
+    },
+    socialRole: randomFrom(["职场人/子女", "伴侣候选/职场人", "公民/家庭照料者"]),
+    powerFeeling: randomFrom(["dominant", "passive", "balanced", "imbalanced"]),
+    desireAndPressure: "希望兼顾体面收入与关系稳定，但现实资源不足导致反复妥协。",
+    conflictHooks: ["关键节点：是否为晋升放弃照料责任"],
+    stance: randomFrom(["left", "center", "right"]),
+    survivalTask:
+      gender === "female"
+        ? "争取职业成长并避免被家庭角色固定化"
+        : "拒绝单一养家角色，争取照料责任与工作权利平衡",
+    stats: {
+      health: Math.floor(48 + Math.random() * 42),
+      reputation: Math.floor(-30 + Math.random() * 70),
+      wealth: roundTo1(-8 + Math.random() * 68),
+      rightsLevel: pickLevelByScore(rightsScore),
+      riskLevel: pickLevelByScore(riskScore),
+    },
+    survivalProgress: Math.floor(42 + Math.random() * 30),
+  };
+}
+
+function mockInitialCharacters() {
+  const ageBase = 27 + Math.floor(Math.random() * 6);
+  const players = [
+    buildMockCharacter("male", ageBase, 0),
+    buildMockCharacter("male", ageBase, 1),
+    buildMockCharacter("female", ageBase, 2),
+    buildMockCharacter("female", ageBase, 3),
+  ];
+  return { players };
+}
+
+function normalizeInitResult(raw) {
+  const fallback = mockInitialCharacters();
+  const rows = Array.isArray(raw?.players) ? raw.players.slice(0, 4) : [];
+  if (rows.length !== 4) return fallback;
+
+  const players = rows.map((p, idx) => {
+    const gender = p?.gender === "female" ? "female" : "male";
+    return {
+      name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
+      gender,
+      genderIdentity: String(p?.genderIdentity || (gender === "male" ? "顺性别男性" : "顺性别女性")).slice(0, 20),
+      age: clamp(Number(p?.age || 28), 20, 45),
+      job: String(p?.job || "职场人").slice(0, 20),
+      cityTier: String(p?.cityTier || "二线").slice(0, 10),
+      classLevel: String(p?.classLevel || "工薪").slice(0, 12),
+      bio: String(p?.bio || "角色背景待补充").slice(0, 80),
+      familyRelation: String(p?.familyRelation || "代际关系中等紧张").slice(0, 70),
+      keyEvents: Array.isArray(p?.keyEvents) ? p.keyEvents.slice(0, 3) : ["曾经历角色冲突"],
+      values: {
+        familyMarriage: ["traditional", "autonomous", "mixed"].includes(p?.values?.familyMarriage)
+          ? p.values.familyMarriage
+          : "mixed",
+        fairness: ["result", "opportunity", "freedom"].includes(p?.values?.fairness)
+          ? p.values.fairness
+          : "opportunity",
+        reform: ["radical", "moderate", "skeptical"].includes(p?.values?.reform)
+          ? p.values.reform
+          : "moderate",
+      },
+      socialRole: String(p?.socialRole || "职场人/家庭成员").slice(0, 24),
+      powerFeeling: ["dominant", "passive", "balanced", "imbalanced"].includes(p?.powerFeeling)
+        ? p.powerFeeling
+        : "balanced",
+      desireAndPressure: String(p?.desireAndPressure || "在现实压力和自我实现间挣扎").slice(0, 80),
+      conflictHooks: Array.isArray(p?.conflictHooks) ? p.conflictHooks.slice(0, 3) : ["关键抉择冲突待触发"],
+      stance: ["left", "center", "right"].includes(p?.stance) ? p.stance : "center",
+      survivalTask: String(p?.survivalTask || "在20回合内保持身心稳定并争取平等空间").slice(0, 60),
+      stats: {
+        health: clamp(Number(p?.stats?.health || 65), 10, 100),
+        reputation: clamp(Number(p?.stats?.reputation || 0), -100, 100),
+        wealth: roundTo1(clamp(Number(p?.stats?.wealth || 10), -30, 150)),
+        rightsLevel: ["low", "mid", "high"].includes(p?.stats?.rightsLevel)
+          ? p.stats.rightsLevel
+          : "mid",
+        riskLevel: ["low", "mid", "high"].includes(p?.stats?.riskLevel)
+          ? p.stats.riskLevel
+          : "mid",
+      },
+      survivalProgress: clamp(Number(p?.survivalProgress || 60), 35, 80),
+    };
+  });
+
+  const maleCount = players.filter((x) => x.gender === "male").length;
+  const femaleCount = players.filter((x) => x.gender === "female").length;
+  if (maleCount !== 2 || femaleCount !== 2) {
+    return fallback;
+  }
+
+  const ages = players.map((x) => x.age);
+  if (Math.max(...ages) - Math.min(...ages) > 15) {
+    return fallback;
+  }
+
+  return { players };
+}
+
+function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
+  const fallback = buildMockCharacter(expectedGender, 27, idx);
+  const gender = expectedGender === "female" ? "female" : "male";
+  const p = rawPlayer || {};
+
+  return {
+    name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
+    gender,
+    genderIdentity: String(p?.genderIdentity || (gender === "male" ? "顺性别男性" : "顺性别女性")).slice(
+      0,
+      20
+    ),
+    age: clamp(Number(p?.age || fallback.age || 28), 20, 35),
+    job: String(p?.job || fallback.job || "职场人").slice(0, 20),
+    cityTier: String(p?.cityTier || fallback.cityTier || "二线").slice(0, 10),
+    classLevel: String(p?.classLevel || fallback.classLevel || "工薪").slice(0, 12),
+    bio: String(p?.bio || fallback.bio || "角色背景待补充").slice(0, 80),
+    familyRelation: String(p?.familyRelation || fallback.familyRelation || "代际关系中等紧张").slice(0, 70),
+    keyEvents: Array.isArray(p?.keyEvents) ? p.keyEvents.slice(0, 3) : fallback.keyEvents,
+    values: {
+      familyMarriage: ["traditional", "autonomous", "mixed"].includes(p?.values?.familyMarriage)
+        ? p.values.familyMarriage
+        : fallback.values.familyMarriage,
+      fairness: ["result", "opportunity", "freedom"].includes(p?.values?.fairness)
+        ? p.values.fairness
+        : fallback.values.fairness,
+      reform: ["radical", "moderate", "skeptical"].includes(p?.values?.reform)
+        ? p.values.reform
+        : fallback.values.reform,
+    },
+    socialRole: String(p?.socialRole || fallback.socialRole || "职场人/家庭成员").slice(0, 24),
+    powerFeeling: ["dominant", "passive", "balanced", "imbalanced"].includes(p?.powerFeeling)
+      ? p.powerFeeling
+      : fallback.powerFeeling,
+    desireAndPressure: String(p?.desireAndPressure || fallback.desireAndPressure || "在现实压力和自我实现间挣扎").slice(
+      0,
+      80
+    ),
+    conflictHooks: Array.isArray(p?.conflictHooks) ? p.conflictHooks.slice(0, 3) : fallback.conflictHooks,
+    stance: ["left", "center", "right"].includes(p?.stance) ? p.stance : fallback.stance,
+    survivalTask: String(p?.survivalTask || fallback.survivalTask || "在20回合内保持身心稳定并争取平等空间").slice(
+      0,
+      60
+    ),
+    stats: {
+      health: clamp(Number(p?.stats?.health || fallback.stats.health || 65), 10, 100),
+      reputation: clamp(Number(p?.stats?.reputation || fallback.stats.reputation || 0), -100, 100),
+      wealth: roundTo1(clamp(Number(p?.stats?.wealth || fallback.stats.wealth || 10), -30, 150)),
+      rightsLevel: ["low", "mid", "high"].includes(p?.stats?.rightsLevel)
+        ? p.stats.rightsLevel
+        : fallback.stats.rightsLevel,
+      riskLevel: ["low", "mid", "high"].includes(p?.stats?.riskLevel)
+        ? p.stats.riskLevel
+        : fallback.stats.riskLevel,
+    },
+    survivalProgress: clamp(Number(p?.survivalProgress || fallback.survivalProgress || 60), 35, 80),
+  };
 }
 
 function mockEvent({ scene, subScene, player, gameState }) {
@@ -59,18 +669,94 @@ function mockEvent({ scene, subScene, player, gameState }) {
       ? "🎲"
       : "⚖️";
 
+  const familyTitles = player?.marriedTo
+    ? ["家务分工协商", "家庭责任再平衡", "共同财务决策分歧", "育儿参与边界讨论"]
+    : ["家务分工冲突", "催婚压力与职业规划", "育儿责任归属争执"];
+
   const titles = {
     workplace: ["晋升评审争议", "绩效谈判拉扯", "育儿支持政策落地受阻"],
-    family: ["家务分工冲突", "催婚压力与职业规划", "育儿责任归属争执"],
+    family: familyTitles,
     culture: ["公共舆论争议", "知识澄清与立场拉扯", "网暴事件发酵"],
     opportunity: ["破局机会敲门", "援助资源释放", "命运交换提案"],
     court: ["法庭审议性别权利议题"],
   };
 
+  if (scene === "culture" && subScene === "library") {
+    return {
+      eventId: `evt_${Date.now()}`,
+      thread: {
+        threadId: `thr_culture_library_${Math.floor(Math.random() * 5)}`,
+        status: "open",
+        summary: "通过科普学习获得新的沟通与协商框架",
+      },
+      title: randomFrom(["图书馆微讲堂", "知识卡片更新", "性别议题科普角"]),
+      narrative:
+        "你在图书馆参加了一场架空社会议题科普活动，重点是法律常识、沟通策略与心理韧性训练。",
+      options: [
+        {
+          id: "opt_a",
+          label: "学习法律与权益速查卡",
+          description: "建立维权与协商知识框架，日常表达更有底气。",
+          effects: {
+            self: { health: 3, reputation: 1, wealth: -1 },
+            global: { socialGap: -1, maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
+            meta: { survivalProgress: 2, equalityProgress: 3, major: false, tag: "📚" },
+          },
+        },
+        {
+          id: "opt_b",
+          label: "参加边界沟通练习",
+          description: "通过练习降低沟通摩擦，提升关系协商能力。",
+          effects: {
+            self: { health: 4, reputation: 0, wealth: -1 },
+            global: { socialGap: -1, maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
+            meta: { survivalProgress: 3, equalityProgress: 2, major: false, tag: "📚" },
+          },
+        },
+      ],
+    };
+  }
+
+  if (scene === "culture" && subScene === "counseling") {
+    return {
+      eventId: `evt_${Date.now()}`,
+      thread: {
+        threadId: `thr_culture_counseling_${Math.floor(Math.random() * 5)}`,
+        status: "open",
+        summary: "通过支持性干预暂时缓解了压力负荷",
+      },
+      title: randomFrom(["咨询室短程干预", "情绪与边界复盘", "压力恢复方案"]),
+      narrative:
+        "你在咨询室完成了一次结构化干预，重点是压力识别、边界表达与现实协商；恢复会消耗一定社会或经济资源。",
+      options: [
+        {
+          id: "opt_a",
+          label: "高强度一对一咨询",
+          description: "恢复更明显，但需要支付较高费用。",
+          effects: {
+            self: { health: 9, reputation: 0, wealth: -2 },
+            global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
+            meta: { survivalProgress: 4, equalityProgress: 1, major: false, tag: "🛋️" },
+          },
+        },
+        {
+          id: "opt_b",
+          label: "同伴支持与沟通训练",
+          description: "恢复中等，经济代价较低但会承担一定名誉成本。",
+          effects: {
+            self: { health: 6, reputation: -1, wealth: -0.8 },
+            global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
+            meta: { survivalProgress: 3, equalityProgress: 1, major: false, tag: "🛋️" },
+          },
+        },
+      ],
+    };
+  }
+
   const title = randomFrom(titles[scene] || titles.workplace);
-  const riskBuff = player.stats.riskLevel === "high" ? 1.3 : player.stats.riskLevel === "mid" ? 1.1 : 0.9;
+  const riskBuff = player.stats.riskLevel === "high" ? 1.5 : player.stats.riskLevel === "mid" ? 1 : 0.6;
   const rightsBuff =
-    player.stats.rightsLevel === "high" ? 1.25 : player.stats.rightsLevel === "mid" ? 1.05 : 0.85;
+    player.stats.rightsLevel === "high" ? 1.5 : player.stats.rightsLevel === "mid" ? 1 : 0.6;
 
   const base = Math.round((Math.random() * 8 + 4) * riskBuff * rightsBuff);
 
@@ -84,8 +770,6 @@ function mockEvent({ scene, subScene, player, gameState }) {
           health: -Math.round(base * 0.7),
           reputation: Math.round(base * 0.6),
           wealth: -Math.round(base * 0.3),
-          rightsLevelShift: 0,
-          riskLevelShift: 1,
         },
         global: {
           socialGap: -Math.round(base * 0.5),
@@ -105,8 +789,6 @@ function mockEvent({ scene, subScene, player, gameState }) {
           health: -Math.round(base * 0.2),
           reputation: -1,
           wealth: 1,
-          rightsLevelShift: 0,
-          riskLevelShift: 0,
         },
         global: {
           socialGap: -1,
@@ -126,8 +808,6 @@ function mockEvent({ scene, subScene, player, gameState }) {
           health: 2,
           reputation: -Math.round(base * 0.5),
           wealth: 0,
-          rightsLevelShift: -1,
-          riskLevelShift: -1,
         },
         global: {
           socialGap: Math.round(base * 0.35),
@@ -160,9 +840,57 @@ export async function generateSceneEvent(params, apiKey) {
     return mockEvent({ scene, subScene, player, gameState });
   }
 
-  const prompt = buildScenePrompt({ scene, subScene, player, gameState, historySummary });
+  const creativePrompt =
+    scene === "culture" && subScene === "square"
+      ? buildCultureSquarePrompt({ player, gameState, historySummary })
+      : scene === "culture" && subScene === "library"
+      ? buildCultureLibraryPrompt({ player, gameState, historySummary })
+      : scene === "culture" && subScene === "counseling"
+      ? buildCultureCounselingPrompt({ player, gameState, historySummary })
+      : buildScenePrompt({ scene, subScene, player, gameState, historySummary });
+
   try {
-    return await callServerLlm(prompt);
+    const decision = await chooseSceneGenerationMode({
+      scene,
+      subScene,
+      player,
+      gameState,
+    });
+
+    const finalPrompt =
+      decision.mode === "preset" && decision.preset
+        ? buildPresetGuidedPrompt({
+            basePrompt: creativePrompt,
+            preset: decision.preset,
+            scene,
+            subScene,
+            player,
+          })
+        : creativePrompt;
+
+    const event = await callServerLlm(finalPrompt);
+
+    if (decision.mode === "preset" && decision.preset) {
+      markPresetUsed(decision.preset, scene, subScene, gameState);
+    }
+
+    if (event && typeof event === "object") {
+      event.generation = {
+        mode: decision.mode,
+        presetId: decision.preset?.presetId || null,
+        presetThemes: safeArray(decision.preset?.themes?.canonical).slice(0, 4),
+        probability: roundTo1(decision.probability),
+        draw: roundTo1(decision.draw),
+        eligibleCount: decision.eligibleCount,
+        signal: decision.signal,
+      };
+    }
+
+    console.log(
+      `[scene-gen] mode=${decision.mode} p=${decision.probability.toFixed(2)} draw=${decision.draw.toFixed(2)} eligible=${decision.eligibleCount} preset=${decision.preset?.presetId || "none"}`
+    );
+
+    return event;
   } catch (error) {
     console.warn("模型调用失败，自动回退到Mock事件:", error);
     return mockEvent({ scene, subScene, player, gameState });
@@ -285,6 +1013,38 @@ export async function resolveRelationshipAction(params, apiKey) {
   } catch (error) {
     console.warn("关系计算调用失败，自动回退到Mock:", error);
     return mockRelationship({ action, initiator, target });
+  }
+}
+
+export async function generateInitialCharacters(apiKey) {
+  if (!apiKey) {
+    return mockInitialCharacters();
+  }
+
+  try {
+    const targetGenders = ["male", "female", "male", "female"];
+    const players = [];
+
+    for (let i = 0; i < targetGenders.length; i += 1) {
+      const targetGender = targetGenders[i];
+      try {
+        const prompt = buildCharacterInitPrompt({
+          targetGender,
+          generatedPlayers: players,
+        });
+        const raw = await callServerLlm(prompt);
+        const rawPlayer = raw?.player || (Array.isArray(raw?.players) ? raw.players[0] : raw);
+        players.push(normalizeSingleInitPlayer(rawPlayer, i, targetGender));
+      } catch (innerError) {
+        console.warn(`第${i + 1}个角色生成失败，自动回退到Mock:`, innerError);
+        players.push(normalizeSingleInitPlayer(null, i, targetGender));
+      }
+    }
+
+    return normalizeInitResult({ players });
+  } catch (error) {
+    console.warn("角色初始化调用失败，自动回退到Mock:", error);
+    return mockInitialCharacters();
   }
 }
 

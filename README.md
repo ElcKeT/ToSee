@@ -31,6 +31,10 @@ npm run dev
 
 浏览器打开：`http://localhost:8080`
 
+说明：
+- 页面启动时会先调用模型生成本局4人角色背景与基础数值
+- 事件请求期间会出现全局加载遮罩，防止误触重复点击
+
 ## 2. OpenRouter 接入
 
 默认不配置 key 时使用 Mock 事件，方便调试。
@@ -42,12 +46,37 @@ npm run dev
 
 ```env
 OPENROUTER_API_KEY=你的真实key
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_MODEL=stepfun/step-3.5-flash:free
+LLM_REQUEST_TIMEOUT_MS=90000
 PORT=8080
 ```
 
+如果你要切付费模型，只改 `OPENROUTER_MODEL` 即可，例如：
+
+```env
+OPENROUTER_MODEL=openai/gpt-4.1-mini
+```
+
+如果你要切到其他兼容网关，也可改 `OPENROUTER_BASE_URL`。
+
 3. 启动 `npm run dev` 后，前端会调用本地后端 `server.mjs`，由后端代理请求 OpenRouter
 4. 不要再把 key 写在前端 `window` 变量里，避免泄露
+
+排查接口：
+
+```bash
+curl http://localhost:8080/api/health
+```
+
+返回 `hasApiKey: true` 代表后端已读取到 key。
+返回里也会包含当前 `baseURL`、`model` 和 `requestTimeoutMs`，便于确认是否切换成功。
+
+## 2.1 修改代码后是否要重新编译
+
+- 改前端文件（`index.html`/`app.js`/`style.css`）: 不需要编译，刷新页面即可
+- 改后端文件（`server.mjs`/`.env`）: 需要重启 `npm run dev`
+- 新增或升级依赖: 需要重新执行 `npm install`
 
 当前模型：`stepfun/step-3.5-flash:free`
 

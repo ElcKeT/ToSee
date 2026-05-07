@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_4cb9448c7a9c",
+  "createdAt": "2026-04-20T09:21:18.590Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::30::被迫沉默",
+    "sectionIndex": 30,
+    "heading": "被迫沉默",
+    "startLine": 1685,
+    "charCount": 4770
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "代际边界"
+    ],
+    "raw": [
+      "母亲后悔生育却不敢言说",
+      "职场中对非主流母职观的排斥",
+      "亲密关系中的情感压抑",
+      "代际间是否该坦诚母职困境",
+      "社会期待与个人体验的撕裂"
+    ]
+  },
+  "title": "当母亲说后悔：被噤声的真实感受",
+  "conflictCore": "母亲在生育后悔的真实感受与社会对‘理想母亲’的期待之间陷入表达困境",
+  "storyBlueprint": {
+    "background": "一位女性在职场和家庭中长期承担母职角色，内心却对成为母亲的决定深感后悔。她意识到这种情绪违背主流价值观，因而陷入是否该表达、向谁表达的挣扎。",
+    "trigger": "她在工作中试图与同事讨论母职的沉重代价，却遭到回避、否定甚至被视作异类；回家后，伴侣也要求她‘假装幸福’以维持表面和谐。",
+    "escalation": "她尝试在匿名论坛发声，却引发激烈攻击；想向亲友倾诉，又怕被视为失败者或伤害孩子；最终只能在心理医生或研究者面前才能部分坦白。",
+    "dilemma": "说出真实感受可能破坏家庭关系、损害亲子纽带，但长期压抑又导致自我认同崩溃与心理耗竭。",
+    "decisionFrames": [
+      {
+        "label": "选择沉默以保护他人",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "维持家庭表面和谐，避免冲突",
+        "longTermImpact": "自我情感持续压抑，可能导致抑郁或亲子关系疏离"
+      },
+      {
+        "label": "谨慎表达以寻求理解",
+        "stance": "偏折中协商",
+        "shortTermTradeoff": "可能遭遇误解或排斥，但有机会获得少数支持",
+        "longTermImpact": "建立真实的情感连接，推动社会对多元母职体验的包容"
+      }
+    ],
+    "endingDirections": [
+      "她继续戴着‘幸福母亲’面具生活，但内心逐渐麻木，与孩子形成情感隔阂",
+      "她找到安全的小圈子分享真实感受，开始重新定义母职与自我的关系，并影响下一代女性做出更自主的选择"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "提尔纱/布伦达等受访者",
+        "target": "城市职场母亲、新手妈妈、二胎职场女性"
+      },
+      {
+        "source": "医院工作背景",
+        "target": "教育、医疗、企业等强调‘奉献’与‘家庭友好’形象的机构"
+      },
+      {
+        "source": "网络论坛‘我的人生已经了结’",
+        "target": "匿名社交平台、母婴社群、心理咨询热线"
+      }
+    ],
+    "modernization": [
+      "将传统家庭压力转化为现代城市中产对‘完美母亲’形象的内卷式追求",
+      "引入社交媒体语境：点赞文化、母职表演、‘丧偶式育儿’讨论热潮",
+      "强调心理治疗资源可及性差异，突出经济独立与话语权的关系"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔生育’等同于‘不爱孩子’或‘虐待倾向’",
+      "不渲染极端亲子决裂场景，保留修复与理解的可能性",
+      "禁止将个体情绪归因为性格缺陷，需体现结构性压迫"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "workplace",
+      "online_community"
+    ],
+    "relationshipHints": [
+      "married",
+      "mother_child",
+      "colleague"
+    ],
+    "conflictHooks": [
+      "‘你已经是妈妈了，还有什么不满意？’",
+      "‘说这种话会让孩子觉得自己是负担’",
+      "‘别人都能撑过来，为什么你不行？’",
+      "‘如果当初没生孩子，你现在会后悔吗？’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 896,
+    "prompt_tokens": 4473,
+    "total_tokens": 5369,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

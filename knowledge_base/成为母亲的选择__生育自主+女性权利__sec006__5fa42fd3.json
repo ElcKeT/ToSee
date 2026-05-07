@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_78f191d7f942",
+  "createdAt": "2026-04-20T09:13:27.389Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::6::⽣孩⼦的理由",
+    "sectionIndex": 6,
+    "heading": "⽣孩⼦的理由",
+    "startLine": 255,
+    "charCount": 2213
+  },
+  "themes": {
+    "canonical": [
+      "生育自主",
+      "女性权利",
+      "心理健康",
+      "舆论双标"
+    ],
+    "raw": [
+      "生育作为社会救赎",
+      "制度化的母职意愿",
+      "原生创伤与身份重构",
+      "社会归属感缺失"
+    ]
+  },
+  "title": "用生育逃离痛苦：社会期待下的母职渴望",
+  "conflictCore": "女性将生育视为摆脱创伤与边缘地位的唯一出路，却发现母职并未带来预期中的救赎，反而陷入新的困境。",
+  "storyBlueprint": {
+    "background": "一位女性成长于充满暴力与忽视的原生家庭，长期处于社会边缘，缺乏归属感。她从小被灌输‘结婚生子是人生必经之路’的观念，并将成为母亲视为自我修复和获得社会认可的终极方式。",
+    "trigger": "在经历心理治疗后，她开始相信生育能让自己‘重生’，给孩子自己未曾拥有的童年，从而弥补自身创伤。",
+    "escalation": "怀孕后，她发现育儿并未带来内心的平静，反而因现实压力、孤独感和未被满足的情感需求而感到更加混乱与失落。周围人却持续赞美母职，否定她的负面情绪。",
+    "dilemma": "她必须在‘承认生育并未治愈自己’与‘维持社会对好母亲’的期待之间做出选择：是继续压抑真实感受扮演理想母亲，还是直面创伤并重新定义自我价值？",
+    "decisionFrames": [
+      {
+        "label": "坚持母职救赎叙事",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得社会认可与家庭支持，避免被指责为‘不合格母亲’",
+        "longTermImpact": "持续压抑心理创伤，可能导致抑郁或亲子关系疏离，重复代际伤害模式"
+      },
+      {
+        "label": "承认母职未能实现救赎",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临亲友质疑与社会污名，可能被贴上‘自私’或‘失败母亲’标签",
+        "longTermImpact": "开启真正的心理疗愈之路，为子女建立更健康的依恋模式，打破创伤循环"
+      }
+    ],
+    "endingDirections": [
+      "她公开分享自己的挣扎，加入支持小组，逐步重建不以母职为核心的身份认同",
+      "她选择沉默忍受，将全部精力投入孩子养育，但内心逐渐麻木，形成情感隔离"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "索菲娅/贾丝明等受访者",
+        "target": "有童年创伤背景的城市年轻女性"
+      },
+      {
+        "source": "原生家庭暴力与忽视",
+        "target": "家庭功能障碍或情感剥夺的成长环境"
+      },
+      {
+        "source": "社会对‘何时生孩子’的追问",
+        "target": "职场、亲友圈对婚育进度的隐性压力"
+      }
+    ],
+    "modernization": [
+      "将‘服兵役’替换为‘完成学业或职业起步’",
+      "公园社交场景可转为母婴社群或线上育儿群组的参与",
+      "心理治疗背景可设定为曾接受心理咨询或阅读自我成长内容"
+    ],
+    "safetyBoundaries": [
+      "避免将生育描绘为唯一救赎手段的极端表述",
+      "不鼓励将母亲身份等同于人生圆满",
+      "禁止暗示不生育即等于心理不健康"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "mental_health",
+      "social_expectation"
+    ],
+    "relationshipHints": [
+      "single",
+      "married",
+      "divorced"
+    ],
+    "conflictHooks": [
+      "‘我以为生孩子能让我被世界接纳，但现在我连自己都找不到了’",
+      "‘所有人都说当妈是女人的天职，但没人问我到底想不想走这条路’",
+      "‘我给了孩子一个家，却弄丢了自己’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 90,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 869,
+    "prompt_tokens": 2515,
+    "total_tokens": 3384,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

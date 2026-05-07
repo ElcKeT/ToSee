@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_e68ffe8f02f4",
+  "createdAt": "2026-04-20T09:14:32.364Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::10::“有问题”的⺟亲",
+    "sectionIndex": 10,
+    "heading": "“有问题”的⺟亲",
+    "startLine": 467,
+    "charCount": 2876
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "心理健康",
+      "舆论双标"
+    ],
+    "raw": [
+      "母亲的矛盾心理",
+      "社会对母职的理想化",
+      "产后抑郁的污名化",
+      "母职认同的自主性",
+      "情绪表达的双重标准"
+    ]
+  },
+  "title": "当母爱被质疑：一位母亲的情感真实与社会期待的撕裂",
+  "conflictCore": "一位母亲在经历爱恨交织的真实情感时，面临社会将其情绪病理化并贴上‘坏妈妈’标签的压力，陷入自我认同与外界期待的剧烈冲突。",
+  "storyBlueprint": {
+    "background": "一位女性在成为母亲后，体验到强烈的矛盾情感——既有深层的爱与满足，也有愤怒、疲惫与疏离。她尝试表达这些复杂感受，却发现社会普遍无法接受母亲对子女存在负面情绪。",
+    "trigger": "她在私人博客中写下自己患有产后忧郁症，并坦承对孩子的爱与恨并存，引发网络评论两极反应：有人共鸣，也有人指责她心理失常、需要治疗。",
+    "escalation": "媒体将她的经历泛化为‘问题母亲’案例，精神科话语被用来解释她的情绪，家人也开始质疑她是否适合继续独自育儿。她陷入内疚与自我怀疑，担心被剥夺抚养权。",
+    "dilemma": "她必须在‘压抑真实情绪以符合好妈妈形象’和‘承认矛盾心理但面临社会污名’之间做出选择。",
+    "decisionFrames": [
+      {
+        "label": "隐藏情绪，扮演完美母亲",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "短期内避免指责，维持家庭表面和谐",
+        "longTermImpact": "长期压抑导致心理崩溃，亲子关系因缺乏真实连接而疏远"
+      },
+      {
+        "label": "公开承认矛盾，寻求理解与支持",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临舆论攻击与家庭质疑，可能被贴上‘病态’标签",
+        "longTermImpact": "推动社会正视母职的情感复杂性，为其他母亲创造表达空间"
+      }
+    ],
+    "endingDirections": [
+      "她选择沉默，逐渐失去自我，陷入更深的抑郁；",
+      "她坚持发声，加入母亲支持团体，推动公共讨论去病理化母职情绪"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "书中人物身份",
+        "target": "城市职场女性/新手母亲/高知妈妈"
+      },
+      {
+        "source": "私人博客",
+        "target": "社交媒体账号/匿名论坛/播客分享"
+      }
+    ],
+    "modernization": [
+      "将‘精神分析理论’转化为当代心理咨询话语",
+      "将‘八卦专栏’转化为短视频平台热搜与评论区围攻",
+      "增加职场回归压力与育儿假制度缺失的背景"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘成实际伤害孩子的个体",
+      "不使用‘天生受虐狂’等过时且污名化的术语",
+      "不暗示所有母亲都应后悔生育"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture",
+      "workplace"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "当你说‘我恨当妈妈’，别人第一反应是报警还是安慰？",
+      "为什么父亲偶尔发脾气叫‘压力大’，母亲就是‘情绪失控’？",
+      "你敢在朋友圈说‘带孩子让我想逃’吗？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 808,
+    "prompt_tokens": 3053,
+    "total_tokens": 3861,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

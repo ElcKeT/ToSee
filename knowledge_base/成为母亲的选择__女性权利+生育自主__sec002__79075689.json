@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_366d27095fb2",
+  "createdAt": "2026-04-20T09:12:09.638Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::2::研究背景",
+    "sectionIndex": 2,
+    "heading": "研究背景",
+    "startLine": 57,
+    "charCount": 2514
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "舆论双标"
+    ],
+    "raw": [
+      "母亲身份的社会期待",
+      "情感表达的禁忌",
+      "研究伦理与共情",
+      "身份认同的流动性"
+    ]
+  },
+  "title": "当母亲后悔成为母亲：被沉默的禁忌之声",
+  "conflictCore": "一位女性公开表达后悔成为母亲，挑战社会对母职神圣化的期待，引发个人情感真实性与社会规范之间的激烈冲突。",
+  "storyBlueprint": {
+    "background": "在主流文化中，母亲身份被理想化为女性人生的必经之路和最高成就。任何对母职的质疑或负面情绪都被视为不道德、自私甚至病态。一位女性因长期压抑对育儿生活的失望与疲惫，开始怀疑自己的选择是否值得。",
+    "trigger": "她在一次亲友聚会中，听到他人赞美‘为母则刚’‘孩子是最大幸福’，情绪失控说出‘如果重来，我不会生孩子’，引发全场震惊与指责。",
+    "escalation": "亲友指责她冷漠无情，丈夫认为她伤害孩子感情，社交媒体上有人人肉她并贴上‘不合格母亲’标签。她试图解释自己的复杂情绪，却被断章取义传播为‘恨孩子’。",
+    "dilemma": "她是否应该继续隐藏真实感受以维持家庭与社会形象？还是坚持表达自我，即使可能失去亲密关系与社会认同？",
+    "decisionFrames": [
+      {
+        "label": "沉默妥协，回归‘完美母亲’角色",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "暂时恢复家庭和谐，避免舆论攻击",
+        "longTermImpact": "长期压抑导致心理健康恶化，亲子关系表面化，强化社会对母职痛苦的忽视"
+      },
+      {
+        "label": "公开讲述经历，加入边缘声音联盟",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "面临社交孤立、家庭矛盾激化、可能被剥夺部分育儿权",
+        "longTermImpact": "推动社会正视母职复杂性，为其他有类似感受的女性提供出口，挑战单一母职叙事"
+      }
+    ],
+    "endingDirections": [
+      "她选择匿名写作，在隐秘社群中找到共鸣，逐渐建立新身份认同",
+      "她公开道歉并撤回言论，回归传统角色，但内心持续挣扎，最终陷入抑郁"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "以色列在线论坛",
+        "target": "匿名育儿社群平台"
+      },
+      {
+        "source": "学术研究者",
+        "target": "独立内容创作者/播客主持人"
+      },
+      {
+        "source": "犹太女性",
+        "target": "城市中产母亲"
+      }
+    ],
+    "modernization": [
+      "将研究背景转化为社交媒体时代下的个体发声困境",
+      "用‘小红书笔记被举报’‘微博热搜争议’替代传统媒体报道",
+      "强调数字身份与现实身份的割裂对情绪表达的影响"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔生育’等同于‘不爱孩子’",
+      "不渲染极端亲子冲突或虐待情节",
+      "禁止暗示所有母亲都应后悔生育"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family|culture|social media"
+    ],
+    "relationshipHints": [
+      "married|mother|extended family"
+    ],
+    "conflictHooks": [
+      "‘你不是真的爱孩子，才会说这种话’",
+      "‘别人都能忍，为什么你不行？’",
+      "‘说出来就是自私，母亲不该有自己’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.91,
+    "qualityScore": 90,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 806,
+    "prompt_tokens": 2774,
+    "total_tokens": 3580,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

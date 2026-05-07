@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_063e7f51ca9d",
+  "createdAt": "2026-04-20T09:20:03.206Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::26::索菲娅（有两个介于⼀岁到五岁之间的孩⼦）",
+    "sectionIndex": 26,
+    "heading": "索菲娅（有两个介于⼀岁到五岁之间的孩⼦）",
+    "startLine": 1285,
+    "charCount": 2301
+  },
+  "themes": {
+    "canonical": [
+      "照护劳动",
+      "育儿责任",
+      "情绪劳动",
+      "性别刻板印象"
+    ],
+    "raw": [
+      "母亲身份认同",
+      "照护劳动无形化",
+      "父职缺席",
+      "情绪劳动持续性",
+      "代际责任延伸"
+    ]
+  },
+  "title": "永不断线的母职：当照护成为无期徒刑",
+  "conflictCore": "母亲在子女成年后仍被社会期待持续承担无形照护责任，而父亲角色长期缺位，导致母亲陷入自我丧失与情感耗竭的两难。",
+  "storyBlueprint": {
+    "background": "一位女性已育有成年子女甚至成为祖母，但依然感受到强烈的心理责任和情感牵绊，认为自己无法真正‘卸任’母亲角色。",
+    "trigger": "孙辈出生后，她开始被期待参与孙辈照护，同时发现子女仍视她为情感支柱，不断向她倾诉生活困境。",
+    "escalation": "她尝试表达疲惫与边界需求，却被家人指责‘冷漠’‘不像个奶奶’；与此同时，子女提及父亲在其成长过程中几乎缺席日常照料。",
+    "dilemma": "她必须在‘继续牺牲自我以履行母职期待’与‘主张个人空间却面临道德谴责’之间做出选择。",
+    "decisionFrames": [
+      {
+        "label": "坚守母职传统",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "获得家庭认可，维持表面和谐",
+        "longTermImpact": "加剧情绪耗竭，强化性别角色固化，子女难以建立独立人格"
+      },
+      {
+        "label": "设立心理边界",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "遭遇亲情疏离风险，被贴上‘自私’标签",
+        "longTermImpact": "推动家庭责任重构，示范健康代际关系，促进父职参与"
+      }
+    ],
+    "endingDirections": [
+      "她逐步减少介入孙辈事务，鼓励子女独立并邀请其配偶共同承担，家庭关系经历阵痛后趋于平衡",
+      "她因压力过大出现焦虑症状，最终被迫退出照护体系，家庭陷入混乱并反思母职神话"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "索菲娅/卡梅尔/娜奥米等受访者",
+        "target": "城市高知母亲/职场祖母/单亲妈妈等可替换角色原型"
+      }
+    ],
+    "modernization": [
+      "将‘脐带系颈’隐喻转化为‘手机24小时待命’‘微信群随时@妈妈’等数字时代照护压力",
+      "引入‘云养娃’‘远程指导育儿’等当代现象体现母职的隐形延续"
+    ],
+    "safetyBoundaries": [
+      "避免将父亲完全妖魔化为‘恶人’，应呈现结构性性别分工而非个体恶意",
+      "不渲染自杀或极端抑郁情节，聚焦心理挣扎而非病理化表达"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "culture"
+    ],
+    "relationshipHints": [
+      "married",
+      "single",
+      "all"
+    ],
+    "conflictHooks": [
+      "‘我只是想当我自己，不是永远当妈妈’",
+      "‘我爸除了付钱，还记得我过敏不能吃花生吗？’",
+      "‘为什么带孩子发烧去医院的人永远是我？’"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 757,
+    "prompt_tokens": 2571,
+    "total_tokens": 3328,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

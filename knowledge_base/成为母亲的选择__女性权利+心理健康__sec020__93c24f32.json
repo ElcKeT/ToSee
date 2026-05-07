@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_c3ae2d5c55ca",
+  "createdAt": "2026-04-20T09:17:26.963Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::20::曾经我是谁，现在⼜是谁",
+    "sectionIndex": 20,
+    "heading": "曾经我是谁，现在⼜是谁",
+    "startLine": 1067,
+    "charCount": 3139
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "心理健康",
+      "代际边界",
+      "情绪劳动"
+    ],
+    "raw": [
+      "身份认同断裂",
+      "母职代价",
+      "创伤代际传递",
+      "社会期待压迫",
+      "女性主体性丧失"
+    ]
+  },
+  "title": "当母亲身份吞噬了曾经的自我",
+  "conflictCore": "成为母亲后，个体在情感、创造力和自主性上的全面退场，与社会宣称‘母职圆满女性’的叙事形成尖锐对立。",
+  "storyBlueprint": {
+    "background": "一位曾拥有独立事业与艺术追求的女性，在生育两个孩子后陷入持续的身心耗竭。她不再能写作、创作或表达自我，日常被育儿责任填满，连基本的情绪空间都被剥夺。",
+    "trigger": "她第三次怀孕的消息传来，同时女儿在学校因肤色差异遭受隐性歧视，触发她童年受排挤的痛苦记忆。",
+    "escalation": "她开始频繁梦见自己童年的孤独场景，白天则因无法回应女儿对肤色的困惑而自责。丈夫认为‘孩子长大就好了’，婆婆则说‘当妈就该多付出’。她感到无人理解她的精神崩溃。",
+    "dilemma": "她必须在‘继续压抑自我以维持母亲角色’与‘重新争取个人空间与心理疗愈’之间做出选择，但两者都伴随巨大代价。",
+    "decisionFrames": [
+      {
+        "label": "坚守母职，牺牲自我",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "家庭表面和谐，孩子获得稳定照料；但她情绪持续恶化，创造力彻底枯竭",
+        "longTermImpact": "可能复制创伤循环，女儿未来也可能将母职视为自我终结；她永久失去重建身份的机会"
+      },
+      {
+        "label": "暂停母职，寻求疗愈",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "需暂时减少育儿投入，可能引发家人不满；但她获得心理咨询与创作重启的空间",
+        "longTermImpact": "为女儿示范健康边界与自我关怀；有望打破代际创伤，重建有主体性的母亲形象"
+      }
+    ],
+    "endingDirections": [
+      "她报名夜间艺术课程并预约 therapist，丈夫起初反对但最终妥协，家庭进入新的协商阶段",
+      "她选择隐忍，将痛苦转化为对女儿过度保护，导致母女关系紧张，自身抑郁加重"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "马娅",
+        "target": "曾从事创意工作的二胎准妈妈"
+      },
+      {
+        "source": "罗提",
+        "target": "觉醒女权意识的全职母亲"
+      },
+      {
+        "source": "女儿肤色焦虑",
+        "target": "孩子因外貌/口音/性取向等被边缘化的经历"
+      }
+    ],
+    "modernization": [
+      "将‘写作雕刻’转化为当代城市女性常见的自由职业、自媒体创作或设计工作",
+      "用‘线上社群声量被忽视’替代‘无法发声’，体现数字时代的情绪劳动困境",
+      "引入心理咨询、母职支持小组等现代资源作为潜在出路"
+    ],
+    "safetyBoundaries": [
+      "避免将母亲描绘为完全无助的牺牲品，需保留其能动性",
+      "不渲染极端自毁行为，聚焦心理挣扎而非生理伤害",
+      "禁止强化‘不生孩=完整女性’的二元对立"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "home",
+      "therapy_session"
+    ],
+    "relationshipHints": [
+      "married",
+      "mother_daughter"
+    ],
+    "conflictHooks": [
+      "当孩子问‘妈妈你以前是做什么的？’时，她该如何回答？",
+      "如果母亲的身份意味着必须遗忘自己，那爱孩子是否也成了伤害？",
+      "社会说母亲是圆满的，为什么我只感到空洞？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 877,
+    "prompt_tokens": 3342,
+    "total_tokens": 4219,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}

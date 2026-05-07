@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "presetId": "preset_e379b0bcc42f",
+  "createdAt": "2026-04-20T09:15:41.729Z",
+  "model": "LongCat-Flash-Chat",
+  "source": {
+    "file": "book_md/成为母亲的选择.md",
+    "book": "成为母亲的选择",
+    "sectionKey": "book_md/成为母亲的选择.md::13::⽆法撤销的决定",
+    "sectionIndex": 13,
+    "heading": "⽆法撤销的决定",
+    "startLine": 551,
+    "charCount": 4867
+  },
+  "themes": {
+    "canonical": [
+      "女性权利",
+      "生育自主",
+      "情绪劳动",
+      "舆论双标"
+    ],
+    "raw": [
+      "生育自主",
+      "女性权利",
+      "情绪劳动",
+      "舆论双标",
+      "心理健康"
+    ]
+  },
+  "title": "成为母亲后，我还能说后悔吗？",
+  "conflictCore": "社会期待母亲必须无条件爱孩子，使女性无法公开表达对生育决定的后悔，压抑真实情感。",
+  "storyBlueprint": {
+    "background": "一位女性在成为母亲多年后，面对育儿压力、职业中断与身份迷失，内心逐渐浮现对当初生育决定的怀疑与遗憾。她开始思考：如果当初选择不生育，人生是否会不同？",
+    "trigger": "孩子进入青春期，频繁冲突让她疲惫不堪；同时昔日未生育的朋友事业有成、生活自由，引发强烈对比与自我质疑。",
+    "escalation": "她在私人日记中写下‘有时希望从未生下孩子’，被家人偶然发现并激烈指责她‘不配做母亲’；社交媒体上有人匿名分享类似感受，却遭舆论围攻，被贴上‘自私’‘心理有问题’标签。",
+    "dilemma": "她是否应该压抑真实情绪以维持‘好母亲’形象，还是勇敢说出后悔，哪怕面临社会孤立与道德审判？",
+    "decisionFrames": [
+      {
+        "label": "沉默顺从",
+        "stance": "偏维护传统稳定",
+        "shortTermTradeoff": "避免家庭冲突，维持表面和谐",
+        "longTermImpact": "长期压抑导致抑郁风险上升，亲子关系因缺乏真诚而疏离"
+      },
+      {
+        "label": "公开表达",
+        "stance": "偏保障个人权利",
+        "shortTermTradeoff": "可能遭遇亲友谴责与社会排斥",
+        "longTermImpact": "推动社会正视母亲的真实情感，为其他女性创造表达空间"
+      }
+    ],
+    "endingDirections": [
+      "她选择加入支持团体，匿名分享经历，逐渐建立自我认同，虽未完全被家人理解，但内心获得解放。",
+      "她删除所有负面言论，回归‘完美母亲’角色，但长期情绪耗竭，最终因焦虑症就医。"
+    ]
+  },
+  "adaptationRules": {
+    "replaceMap": [
+      {
+        "source": "美国作家兼妈妈",
+        "target": "都市中产母亲"
+      },
+      {
+        "source": "网络论坛留言者",
+        "target": "亲友或社交媒体评论者"
+      }
+    ],
+    "modernization": [
+      "将‘全职主妇’背景更新为‘曾放弃高管职位成为全职妈妈’，突出职场与家庭抉择的当代困境",
+      "引入心理咨询、女性互助社群等现代支持系统作为潜在出路"
+    ],
+    "safetyBoundaries": [
+      "避免将‘后悔生育’等同于‘不爱孩子’或‘虐待倾向’",
+      "不渲染极端自杀或弃养情节，聚焦情感挣扎而非行为后果"
+    ]
+  },
+  "promptSeed": {
+    "sceneHints": [
+      "family",
+      "social media",
+      "therapy"
+    ],
+    "relationshipHints": [
+      "married",
+      "mother"
+    ],
+    "conflictHooks": [
+      "当母亲说出‘我后悔生孩子’，这句话为何被视为禁忌？",
+      "社会如何用‘母爱天生’的神话，剥夺女性表达复杂情感的权利？",
+      "如果后悔不是软弱，而是觉醒的开始？"
+    ]
+  },
+  "quality": {
+    "confidence": 0.92,
+    "qualityScore": 91,
+    "attempt": 1
+  },
+  "usage": {
+    "completion_tokens": 774,
+    "prompt_tokens": 4560,
+    "total_tokens": 5334,
+    "cache_write_tokens": 0,
+    "cache_read_tokens": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cached_tokens": 0
+  }
+}
