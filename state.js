@@ -15,13 +15,6 @@ function pickOne(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-function pickLevel() {
-  const r = Math.random();
-  if (r < 0.33) return "low";
-  if (r < 0.74) return "mid";
-  return "high";
-}
-
 function makeBio(name, gender, job) {
   const templates = [
     `${name}来自普通家庭，现任${job}，重视稳定与责任，在性别议题上逐步形成自己的立场。`,
@@ -102,10 +95,7 @@ function buildRandomPlayers() {
             health: randomInt(45, 95),
             reputation: randomInt(-45, 55),
             wealth: randomInt(-20, 80),
-            rightsLevel: pickLevel(),
-            riskLevel: pickLevel(),
           },
-          survivalProgress: randomInt(45, 75),
         },
         idx
       )
@@ -118,6 +108,11 @@ function buildPlayerFromSeed(seed, idx) {
   const gender = seed?.gender === "female" ? "female" : "male";
   const name = String(seed?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`);
   const job = String(seed?.job || "职场人");
+  const stats = normalizeStats({
+    health: seed?.stats?.health ?? randomInt(45, 95),
+    reputation: seed?.stats?.reputation ?? randomInt(-45, 55),
+    wealth: seed?.stats?.wealth ?? randomInt(-20, 80),
+  });
 
   return {
     id: `p${idx + 1}`,
@@ -142,18 +137,8 @@ function buildPlayerFromSeed(seed, idx) {
     conflictHooks: Array.isArray(seed?.conflictHooks) ? seed.conflictHooks.slice(0, 3) : [],
     stance: String(seed?.stance || "center"),
     survivalTask: String(seed?.survivalTask || "维持生存并争取更公平的制度空间"),
-    stats: {
-      health: utils.clamp(Number(seed?.stats?.health || randomInt(45, 95)), 10, 100),
-      reputation: utils.clamp(Number(seed?.stats?.reputation || randomInt(-45, 55)), -100, 100),
-      wealth: Number(seed?.stats?.wealth ?? randomInt(-20, 80)),
-      rightsLevel: ["low", "mid", "high"].includes(seed?.stats?.rightsLevel)
-        ? seed.stats.rightsLevel
-        : pickLevel(),
-      riskLevel: ["low", "mid", "high"].includes(seed?.stats?.riskLevel)
-        ? seed.stats.riskLevel
-        : pickLevel(),
-    },
-    survivalProgress: utils.clamp(Number(seed?.survivalProgress || randomInt(45, 75)), 0, 100),
+    stats,
+    survivalProgress: calcInitialSurvivalProgress(stats),
     counselingUsed: 0,
     items: [],
     marriedTo: null,
@@ -162,6 +147,130 @@ function buildPlayerFromSeed(seed, idx) {
     alive: true,
     lastDelta: {},
   };
+}
+
+const RIGHTS_RULES = {
+  high: { gainBonus: 0.2, lossReduction: 0.2, survivalBonus: 5 },
+  mid: { gainBonus: 0.1, lossReduction: 0.1, survivalBonus: 3 },
+  low: { gainBonus: 0, lossReduction: 0, survivalBonus: 0 },
+};
+
+const RISK_RULES = {
+  high: { lossPenalty: 0.3, survivalPenalty: -3 },
+  mid: { lossPenalty: 0.15, survivalPenalty: -1 },
+  low: { lossPenalty: 0, survivalPenalty: 0 },
+};
+
+function roundTo1(value) {
+  return Math.round(Number(value || 0) * 10) / 10;
+}
+
+function normalizeStats(input) {
+  const reputation = utils.clamp(Number(input?.reputation ?? 0), -100, 100);
+  const levels = deriveLevelsFromReputation(reputation);
+  return {
+    health: utils.clamp(Number(input?.health ?? 65), 0, 100),
+    reputation,
+    wealth: Number(input?.wealth ?? 10),
+    rightsLevel: levels.rightsLevel,
+    riskLevel: levels.riskLevel,
+  };
+}
+
+export function deriveLevelsFromReputation(reputation) {
+  const value = Number(reputation || 0);
+  if (value >= 50) return { rightsLevel: "high", riskLevel: "low" };
+  if (value <= -50) return { rightsLevel: "low", riskLevel: "high" };
+  return { rightsLevel: "mid", riskLevel: "mid" };
+}
+
+function syncLevelsFromReputation(player) {
+  const levels = deriveLevelsFromReputation(player.stats.reputation);
+  player.stats.rightsLevel = levels.rightsLevel;
+  player.stats.riskLevel = levels.riskLevel;
+}
+
+function statDeltaMultiplier(delta, stats) {
+  const rights = RIGHTS_RULES[stats.rightsLevel] || RIGHTS_RULES.mid;
+  const risk = RISK_RULES[stats.riskLevel] || RISK_RULES.mid;
+  if (Number(delta || 0) >= 0) {
+    return 1 + rights.gainBonus;
+  }
+  return Math.max(0, 1 - rights.lossReduction + risk.lossPenalty);
+}
+
+function calcEffectiveStatDelta(delta, stats) {
+  return roundTo1(Number(delta || 0) * statDeltaMultiplier(delta, stats));
+}
+
+function calcSurvivalDeltaFromEffectiveStats(effectiveDelta, stats) {
+  const rights = RIGHTS_RULES[stats.rightsLevel] || RIGHTS_RULES.mid;
+  const risk = RISK_RULES[stats.riskLevel] || RISK_RULES.mid;
+  return (
+    Number(effectiveDelta.health || 0) * 0.4 +
+    Number(effectiveDelta.reputation || 0) * 0.3 +
+    Number(effectiveDelta.wealth || 0) * 0.2 +
+    rights.survivalBonus +
+    risk.survivalPenalty
+  );
+}
+
+export function calcInitialSurvivalProgress(stats) {
+  const rights = RIGHTS_RULES[stats.rightsLevel] || RIGHTS_RULES.mid;
+  const risk = RISK_RULES[stats.riskLevel] || RISK_RULES.mid;
+  return utils.clamp(
+    Math.max(
+      10,
+      Number(stats.health || 0) * 0.4 +
+        Number(stats.reputation || 0) * 0.3 +
+        Number(stats.wealth || 0) * 0.2 +
+        rights.survivalBonus +
+        risk.survivalPenalty
+    ),
+    0,
+    100
+  );
+}
+
+export function calculateEffectiveDelta(player, baseDelta = {}) {
+  const stats = {
+    ...player.stats,
+    ...deriveLevelsFromReputation(player.stats?.reputation),
+  };
+  const effective = {
+    health: calcEffectiveStatDelta(baseDelta.health || 0, stats),
+    reputation: calcEffectiveStatDelta(baseDelta.reputation || 0, stats),
+    wealth: calcEffectiveStatDelta(baseDelta.wealth || 0, stats),
+  };
+  return {
+    ...effective,
+    survivalProgress: roundTo1(calcSurvivalDeltaFromEffectiveStats(effective, stats)),
+  };
+}
+
+function applyCalculatedDelta(state, player, baseDelta) {
+  if (!player || !baseDelta) return null;
+  syncPlayerWealthFromPool(state, player);
+  syncLevelsFromReputation(player);
+
+  const effective = calculateEffectiveDelta(player, baseDelta);
+  player.stats.health = utils.clamp(player.stats.health + effective.health, 0, 100);
+  player.stats.reputation = utils.clamp(player.stats.reputation + effective.reputation, -100, 100);
+  if (effective.wealth) {
+    applyWealthDelta(state, player, effective.wealth);
+  }
+
+  player.survivalProgress = utils.clamp(player.survivalProgress + effective.survivalProgress, 0, 100);
+  syncLevelsFromReputation(player);
+
+  if (player.stats.health <= 0) {
+    player.survivalProgress = 0;
+  }
+  if (player.survivalProgress <= 0) {
+    player.alive = false;
+  }
+
+  return effective;
 }
 
 export function applyEffects(state, playerId, effects) {
@@ -180,21 +289,21 @@ export function applyEffects(state, playerId, effects) {
     survivalProgress: player.survivalProgress,
   };
 
-  player.stats.health = utils.clamp(player.stats.health + (self.health || 0), 0, 100);
-  player.stats.reputation = utils.clamp(player.stats.reputation + (self.reputation || 0), -100, 100);
-  if (self.wealth) {
-    applyWealthDelta(state, player, self.wealth);
-  }
-
-  player.survivalProgress = utils.clamp(
-    player.survivalProgress + ((effects.meta && effects.meta.survivalProgress) || 0),
-    0,
-    100
-  );
+  const combinedSelf = {
+    health: Number(self.health || 0) + Number(global.allHealthDelta || 0),
+    reputation: Number(self.reputation || 0),
+    wealth: Number(self.wealth || 0),
+  };
+  applyCalculatedDelta(state, player, combinedSelf);
 
   if (global.allHealthDelta) {
     state.players.forEach((p) => {
-      p.stats.health = utils.clamp(p.stats.health + global.allHealthDelta, 0, 100);
+      if (p.id === player.id) return;
+      applyCalculatedDelta(state, p, {
+        health: global.allHealthDelta,
+        reputation: 0,
+        wealth: 0,
+      });
     });
   }
 
@@ -209,23 +318,14 @@ export function applyEffects(state, playerId, effects) {
     survivalProgress: player.survivalProgress - before.survivalProgress,
   };
 
-  if (player.stats.health <= 0 || player.survivalProgress <= 0) {
+  if (player.survivalProgress <= 0) {
     player.alive = false;
   }
 }
 
 export function applyLocalDelta(state, player, delta) {
   if (!delta) return;
-  syncPlayerWealthFromPool(state, player);
-  player.stats.health = utils.clamp(player.stats.health + (delta.health || 0), 0, 100);
-  player.stats.reputation = utils.clamp(player.stats.reputation + (delta.reputation || 0), -100, 100);
-  if (delta.wealth) {
-    applyWealthDelta(state, player, delta.wealth);
-  }
-  player.survivalProgress = utils.clamp(player.survivalProgress + (delta.survivalProgress || 0), 0, 100);
-  if (player.stats.health <= 0 || player.survivalProgress <= 0) {
-    player.alive = false;
-  }
+  applyCalculatedDelta(state, player, delta);
 }
 
 export function createMarriage(state, idA, idB, initIntimacy = 60) {

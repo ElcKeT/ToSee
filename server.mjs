@@ -9,17 +9,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = Number(process.env.PORT || 8080);
-const baseURL = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-const model = process.env.OPENROUTER_MODEL || "stepfun/step-3.5-flash:free";
+const baseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com";
+const model = process.env.DEEPSEEK_MODEL || "deepseek-v4-pro";
 const requestTimeoutMs = Number(process.env.LLM_REQUEST_TIMEOUT_MS || 90000);
+const maxTokens = Number(process.env.LLM_MAX_TOKENS || 4096);
 
-if (!process.env.OPENROUTER_API_KEY) {
-  console.warn("[warn] OPENROUTER_API_KEY 未配置，后端将返回降级错误，前端会回退到 Mock 事件。");
+if (!process.env.DEEPSEEK_API_KEY) {
+  console.warn("[warn] DEEPSEEK_API_KEY 未配置，后端将返回降级错误，前端会回退到 Mock 事件。");
 }
 
 const client = new OpenAI({
   baseURL,
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.DEEPSEEK_API_KEY || "missing-deepseek-api-key",
 });
 
 let reqSeq = 0;
@@ -38,7 +39,8 @@ app.get("/api/health", (_, res) => {
     baseURL,
     model,
     requestTimeoutMs,
-    hasApiKey: Boolean(process.env.OPENROUTER_API_KEY),
+    maxTokens,
+    hasApiKey: Boolean(process.env.DEEPSEEK_API_KEY),
   });
 });
 
@@ -68,18 +70,27 @@ app.post("/api/llm", async (req, res) => {
     `[llm][${reqId}] start model=${model} promptChars=${prompt.length} timeoutMs=${requestTimeoutMs}`
   );
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    console.warn(`[llm][${reqId}] OPENROUTER_API_KEY missing`);
-    return res.status(503).json({ error: "未配置 OPENROUTER_API_KEY" });
+  if (!process.env.DEEPSEEK_API_KEY) {
+    console.warn(`[llm][${reqId}] DEEPSEEK_API_KEY missing`);
+    return res.status(503).json({ error: "未配置 DEEPSEEK_API_KEY" });
   }
 
   try {
     const response = await Promise.race([
       client.chat.completions.create({
         model,
-        messages: [{ role: "user", content: prompt }],
-        //reasoning: { enabled: true },
+        messages: [
+          {
+            role: "system",
+            content: "你是一个只输出合法 JSON 对象的助手。不要输出解释、Markdown 或 JSON 以外的文本。",
+          },
+          { role: "user", content: prompt },
+        ],
         response_format: { type: "json_object" },
+        thinking: { type: "enabled" },
+        reasoning_effort: "high",
+        stream: false,
+        max_tokens: maxTokens,
         temperature: 0.7,
       }),
       new Promise((_, reject) => {
@@ -101,7 +112,7 @@ app.post("/api/llm", async (req, res) => {
     );
     return res.status(500).json({
       ok: false,
-      error: error instanceof Error ? error.message : "OpenRouter 调用失败",
+      error: error instanceof Error ? error.message : "DeepSeek 调用失败",
       reqId,
     });
   }

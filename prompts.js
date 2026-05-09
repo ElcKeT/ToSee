@@ -10,49 +10,30 @@ export function buildCharacterInitPrompt({ targetGender, generatedPlayers = [] }
 
   const expectedGender = targetGender === "female" ? "female" : "male";
 
-  return `你是社会性别议题文字桌游“天平叙事局”的角色生成器。当前任务是“分4轮生成角色中的第${
+  return `你是选择驱动的性别平等文字游戏“天平叙事局”的角色生成器。当前任务是“分4轮生成角色中的第${
     generatedPlayers.length + 1
-  }轮”。本轮只生成1名角色，输出严格JSON，不要解释文本。
+  }轮”。本轮只生成1名角色，输出严格JSON。
 
-固定硬性约束(每轮都必须遵守):
+硬性约束:
 1) 本局总人数固定4人，最终必须2男2女
 2) 本轮角色gender必须是: ${expectedGender}
 3) 年龄必须在20~35之间
 4) 初始状态全部为单身，禁止出现已婚/已有家庭(妻子/丈夫/儿子/女儿)
-5) 角色社会条件不可极端悬殊，保持“普通人”尺度
+5) 角色社会条件保持普通人尺度，不写极端悬殊或猎奇背景
 6) bio不超过80字
-7) 必须与已生成角色形成明显差异，避免同质化
 
-多轮对话历史(用于去重与差异化):
-[assistant历史输出角色]
+已生成角色(用于差异化):
 ${historyLines}
 
-[assistant本轮生成要求]
-- 不得与历史角色在“职业+阶层+家庭+核心价值观+立场”上高度重合
-- 名字不能与历史重复
-- 冲突槽位、关键经历、欲望困境要换角度
-
-本轮角色必须包含:
-- 基本信息: gender、age、job、cityTier、classLevel
-- 家庭与代际: familyRelation(主要是上一代关系)
-- 关键经历: keyEvents(2-3条)
-- 价值观: values(家庭婚姻/公平责任自由/制度改革态度)
-- 身份与权力: socialRole、powerFeeling
-- 欲望与困境: desireAndPressure
-- 冲突槽位: conflictHooks(至少1条)
-- 游戏字段: stance(左/中/右), rightsLevel(low/mid/high), riskLevel(low/mid/high)
-- 个人存活任务: survivalTask
-
-权利指数与风险等级定义(必须遵守):
-1) rightsLevel: low=0.6倍, mid=1.0倍, high=1.5倍
-2) riskLevel: low=0.6倍, mid=1.0倍, high=1.5倍
-3) 结合职业、阶层、家庭处境、社会支持网络给出合理等级，不要机械平均
+本轮重点:
+- 与历史角色在职业、阶层、家庭关系、价值观和冲突槽位上拉开差异
+- 写出可持续触发事件的欲望、压力和矛盾，不要只写标签
+- stats只包含 health、reputation、wealth
 
 数值约束:
 - health: 10~100
 - reputation: -100~100
 - wealth(万元): -30~150
-- survivalProgress: 35~80
 
 输出JSON格式(只输出1个角色):
 {
@@ -80,11 +61,8 @@ ${historyLines}
     "stats": {
       "health": 72,
       "reputation": -10,
-      "wealth": 24,
-      "rightsLevel": "mid",
-      "riskLevel": "high"
-    },
-    "survivalProgress": 62
+      "wealth": 24
+    }
   }
 }`;
 }
@@ -104,17 +82,16 @@ export function buildScenePrompt({
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”主持AI。请根据玩家当前状态生成一个事件和2-3个选项，必须输出严格JSON。
+  return `你是“天平叙事局”的剧情主持AI。游戏是选择驱动的性别平等文字游戏。请为当前玩家生成一个事件和2-3个选项，输出严格JSON。
 
-# 当前场景
-scene: ${scene}
-subScene: ${subScene || "none"}
+# 场景
+${scene}${subScene ? `/${subScene}` : ""}
+主题: ${topicHints}
 
 # 当前玩家
 name: ${player.name}
 gender: ${player.gender}
 relationshipStatus: ${relationshipStatus}
-age: ${player.age}
 job: ${player.job}
 cityTier: ${player.cityTier || "unknown"}
 classLevel: ${player.classLevel || "unknown"}
@@ -122,54 +99,25 @@ bio: ${player.bio}
 familyRelation: ${player.familyRelation || ""}
 keyEvents: ${(player.keyEvents || []).join(" | ")}
 values: familyMarriage=${player.values?.familyMarriage || "mixed"}, fairness=${player.values?.fairness || "opportunity"}, reform=${player.values?.reform || "moderate"}
-socialRole: ${player.socialRole || ""}
-powerFeeling: ${player.powerFeeling || "balanced"}
 desireAndPressure: ${player.desireAndPressure || ""}
 conflictHooks: ${(player.conflictHooks || []).join(" | ")}
-stance: ${player.stance || "center"}
-survivalTask: ${player.survivalTask || ""}
 health: ${player.stats.health}
 reputation: ${player.stats.reputation}
 wealth: ${player.stats.wealth}
-rightsLevel: ${player.stats.rightsLevel}
-riskLevel: ${player.stats.riskLevel}
-
-# 指数倍率规则(必须遵守)
-rightsLevel倍率: low=0.6, mid=1.0, high=1.5
-riskLevel倍率: low=0.6, mid=1.0, high=1.5
-对前三个核心数值 health/reputation/wealth 的变化，需体现上述指数倍率影响。
 
 # 游戏状态
 round: ${gameState.round}
-maxRound: ${gameState.maxRound}
-currentGap: ${gameState.socialGap}
-teamGoal: 社会权利差值<5
-personalGoal: 生命或健康任一归零则失败
 
-# 历史摘要(必须用于衔接剧情)
+# 历史摘要
 ${historySummary}
 
-# 预选问题类型(必须从中选1-2个作为本次核心冲突)
-${topicHints}
-
 # 生成要求
-1) 事件必须与历史有关联：
-- 若存在未结束主线，优先给出后续事件
-- 若某线已结束，不可复用同构冲突
-2) 事件要体现中国语境的性别议题现实矛盾
-3) 选项数量2-3个，且立场有差异
-4) 每个选项给出“数值变化JSON”，同时给“事件线更新”
-5) 广场(scene=culture且subScene=square)的选项必须影响全体玩家health
-6) 咨询室(scene=culture且subScene=counseling)仅在health<50可进入，恢复health要扣财富或名誉，且单角色最多3次
-7) wealth单位是“万元”，必须符合现实尺度：
-- 普通事件(职场/家庭/图书馆/社交广场/咨询室)单次wealth变动建议在 -1.5~+1.5 之间
-- 人生机遇/法庭/PVP等重大事件可放宽到 -8~+8
-- 严禁出现“因为一件小事损失1万元以上且无重大背景说明”的不合理结果
-8) 选项效果必须兼顾短期生存与长期平等，不得全部同方向增减
-9) 叙事风格聚焦中国语境下“普通人日常矛盾”，避免极端化、奇观化设定
-10) 若历史中没有与他人建立PVP关系，不要引入其他玩家的私密经历线；可出现公共新闻/公共议题但不要写成熟人线
-11) 当relationshipStatus=married时，禁止使用“催婚/相亲/婚房压力/是否结婚”等单身阶段议题；家庭场景应优先从“家务分配/责任分配/财务分配/育儿参与/代际边界”中组织冲突
-12) 当scene=culture且subScene=counseling时：每个选项必须是“付出代价换健康恢复”，即self.health必须>0，且self.wealth<0或self.reputation<0至少满足一个；禁止出现self.health<=0的选项
+1) 若历史中有open事件线，优先延续；若已closed，避免复刻同构冲突。
+2) 写普通人日常中的现实性别矛盾，具体到场景、关系和制度压力，避免奇观化。
+3) 选项必须形成真实取舍：至少一个偏自保、一个偏争取公平；不要出现所有核心数值同涨或同跌。
+4) self只填基础 health/reputation/wealth 变化，wealth单位为万元；普通事件 wealth 建议在 -1.5~+1.5 内。
+5) 每个选项都写 summary：人物+处境+选择+意义的1句话，用于经历手账。
+6) 每个选项都写 thread：该选项发生后的故事线状态和下一步悬念；若冲突已解决可closed。
 
 # 输出JSON格式
 {
@@ -177,7 +125,7 @@ ${topicHints}
   "thread": {
     "threadId": "thr_xxx",
     "status": "open|closed",
-    "summary": "事件线变化一句话"
+    "summary": "本事件线的核心悬念"
   },
   "title": "",
   "narrative": "",
@@ -186,6 +134,11 @@ ${topicHints}
       "id": "opt_a",
       "label": "",
       "description": "",
+      "summary": "林晓梅在职场选拔中据理力争，争取未婚未育女性公平竞争的权利。",
+      "thread": {
+        "status": "open|closed",
+        "summary": "申诉已提交，院领导是否启动公平复核仍未确定。"
+      },
       "effects": {
         "self": {
           "health": -10,
@@ -199,7 +152,6 @@ ${topicHints}
           "allHealthDelta": -3
         },
         "meta": {
-          "survivalProgress": 6,
           "equalityProgress": 8,
           "major": true,
           "tag": "💼"
@@ -218,40 +170,34 @@ export function buildCultureSquarePrompt({ player, gameState, historySummary }) 
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”文化广场主持AI。请生成“架空世界中的公共争议事件”，并给出2-3个讨论立场选项。输出严格JSON。
+  return `你是“天平叙事局”文化广场主持AI。请生成一个架空公共争议事件和2-3个讨论立场选项，输出严格JSON。
 
-# 场景定位
-scene: culture
-subScene: square
-定位: 公共议题讨论区（事件主角不是当前玩家）
+# 场景
+culture/square
+主题: ${topicHints}
+定位: 公共议题讨论区，事件主角不是当前玩家
 
-# 当前玩家(仅用于结算，不用于故事主角)
+# 当前玩家(用于决定讨论视角，不写成事件当事人)
 name: ${player.name}
 gender: ${player.gender}
 health: ${player.stats.health}
 reputation: ${player.stats.reputation}
 wealth: ${player.stats.wealth}
-rightsLevel: ${player.stats.rightsLevel}
-riskLevel: ${player.stats.riskLevel}
 
 # 游戏状态
 round: ${gameState.round}
-currentGap: ${gameState.socialGap}
 
-# 可见历史(仅用于连续性，不要把当前玩家写成事件当事人)
+# 可见历史
 ${historySummary}
 
-# 预选问题类型(必须从中选1-2个)
-${topicHints}
-
 # 生成要求
-1) 事件必须是“社会真实争议”的架空化改写，可映射现实，但不得直接点名现实个人
-2) 事件中的当事人应为虚构人物/群体，不是当前玩家
-3) 选项是“参与讨论的立场选择”，要有明显分歧与后果
-4) 所有选项仍需给出对当前玩家的数值影响(self)与全局影响(global)
-5) 广场事件必须对全体玩家健康产生联动(global.allHealthDelta 非0)
-6) wealth单位是万元，广场单次波动建议在 -1.5~+1.5 内
-7) 不要输出“不参与讨论”选项，该选项由前端固定追加
+1) 架空化改写真实社会争议，不直接点名现实个人。
+2) 选项是参与讨论的不同立场，必须有分歧、代价和公共影响。
+3) 不要输出“不参与讨论”选项，程序会固定追加。
+4) self只填基础 health/reputation/wealth；wealth建议在 -1.5~+1.5 内。
+5) 选项不要全部同向增减；立场越激烈，短期压力通常越高。
+6) 每个选项写 summary，用一句话概括玩家如何参与公共讨论及其意义。
+7) 每个选项写 thread，说明该公共议题在选择后的发酵状态。
 
 # 输出JSON格式
 {
@@ -259,7 +205,7 @@ ${topicHints}
   "thread": {
     "threadId": "thr_xxx",
     "status": "open|closed",
-    "summary": "事件线变化一句话"
+    "summary": "公共争议的核心悬念"
   },
   "title": "",
   "narrative": "",
@@ -268,6 +214,11 @@ ${topicHints}
       "id": "opt_a",
       "label": "",
       "description": "",
+      "summary": "李航在公共争议中支持明确问责，让职场性别歧视被更多人看见。",
+      "thread": {
+        "status": "open|closed",
+        "summary": "舆论开始转向制度责任，但反弹声音仍在扩大。"
+      },
       "effects": {
         "self": {
           "health": -5,
@@ -281,7 +232,6 @@ ${topicHints}
           "allHealthDelta": -2
         },
         "meta": {
-          "survivalProgress": 2,
           "equalityProgress": 4,
           "major": true,
           "tag": "🗣️"
@@ -300,46 +250,33 @@ export function buildCultureLibraryPrompt({ player, gameState, historySummary })
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”图书馆主持AI。请生成“架空世界中的知识科普与观念铺垫事件”，并给出2-3个学习/实践选项。输出严格JSON。
+  return `你是“天平叙事局”图书馆主持AI。请生成一个知识学习/实践事件和2-3个选项，输出严格JSON。
 
-# 场景定位
-scene: culture
-subScene: library
-定位: 认知提升区（非激烈冲突，非撕裂对立）
+# 场景
+culture/library
+主题: ${topicHints}
+定位: 认知提升区，低冲突、重方法
 
-# 当前玩家(用于个性化知识，不作为冲突当事人)
+# 当前玩家
 name: ${player.name}
 gender: ${player.gender}
 health: ${player.stats.health}
 reputation: ${player.stats.reputation}
 wealth: ${player.stats.wealth}
-rightsLevel: ${player.stats.rightsLevel}
-riskLevel: ${player.stats.riskLevel}
 relationshipStatus: ${player.marriedTo ? "married" : "single"}
 
 # 游戏状态
 round: ${gameState.round}
-currentGap: ${gameState.socialGap}
 
-# 可见历史(仅用于连续性，不要写成个人苦难回溯)
+# 可见历史
 ${historySummary}
 
-# 知识主题提示(必须从中选1-2个)
-${topicHints}
-
 # 生成要求
-1) 事件必须是架空场景，不直接绑定当前玩家个人经历，不写激烈冲突
-2) 内容基调: 知识科普、观念铺垫、沟通技能、法律常识、心理韧性
-3) 适配所有人设: 兼顾不同性别与婚恋状态的认知需求
-4) 选项是“学习路径/实践方式”差异，不是立场对骂
-5) 整体收益应偏正向：
-- self.health 建议 +2~+5
-- self.reputation 建议 0~+2
-- self.wealth 建议 -1.5~0
-- meta.survivalProgress 建议 +1~+4
-- meta.equalityProgress 建议 +1~+4
-6) global.allHealthDelta 固定为0（图书馆不做全员健康联动）
-7) 不输出“不参与”选项
+1) 写成具体学习/练习场景，不写激烈冲突或立场对骂。
+2) 选项是不同学习路径或实践方式，差异体现在成本、收益和适用场景。
+3) 整体偏正向，但仍要有代价；self.health +2~+5，self.reputation 0~+2，self.wealth -1.5~0。
+4) 每个选项写 summary，概括玩家获得了什么方法或认知。
+5) 每个选项写 thread；图书馆通常可closed，除非明显引出后续实践。
 
 # 输出JSON格式
 {
@@ -347,7 +284,7 @@ ${topicHints}
   "thread": {
     "threadId": "thr_xxx",
     "status": "open|closed",
-    "summary": "事件线变化一句话"
+    "summary": "学习主题或后续实践悬念"
   },
   "title": "",
   "narrative": "",
@@ -356,6 +293,11 @@ ${topicHints}
       "id": "opt_a",
       "label": "",
       "description": "",
+      "summary": "林晓梅通过权益速查卡整理申诉材料，为后续职场协商补上了法律依据。",
+      "thread": {
+        "status": "closed",
+        "summary": "本次学习已转化为可执行的沟通清单。"
+      },
       "effects": {
         "self": {
           "health": 3,
@@ -369,7 +311,6 @@ ${topicHints}
           "allHealthDelta": 0
         },
         "meta": {
-          "survivalProgress": 2,
           "equalityProgress": 3,
           "major": false,
           "tag": "📚"
@@ -388,12 +329,12 @@ export function buildCultureCounselingPrompt({ player, gameState, historySummary
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”咨询室主持AI。请生成“付出代价换取身心修复”的低冲突事件，并给出2-3个干预选项。输出严格JSON。
+  return `你是“天平叙事局”咨询室主持AI。请生成一个付出代价换取身心修复的低冲突事件和2-3个干预选项，输出严格JSON。
 
-# 场景定位
-scene: culture
-subScene: counseling
-定位: 心理支持与现实协商区（不做激烈冲突叙事）
+# 场景
+culture/counseling
+主题: ${topicHints}
+定位: 心理支持与现实协商区
 
 # 当前玩家
 name: ${player.name}
@@ -402,27 +343,19 @@ relationshipStatus: ${player.marriedTo ? "married" : "single"}
 health: ${player.stats.health}
 reputation: ${player.stats.reputation}
 wealth: ${player.stats.wealth}
-rightsLevel: ${player.stats.rightsLevel}
-riskLevel: ${player.stats.riskLevel}
 
 # 游戏状态
 round: ${gameState.round}
-currentGap: ${gameState.socialGap}
 
 # 可见历史
 ${historySummary}
 
-# 干预主题提示(必须从中选1-2个)
-${topicHints}
-
-# 强制生成要求
-1) 咨询室是修复板块，所有选项都必须让self.health为正数(建议+4~+12)
-2) 每个选项都必须有代价：self.wealth<0 或 self.reputation<0，至少一个为负
-3) wealth单位是万元，咨询室单次财富代价建议 -0.5~-2
-4) 不要让global.allHealthDelta影响全体，固定为0
-5) 选项差异体现在“恢复幅度-代价结构”不同，而不是冲突立场
-6) meta.survivalProgress 应该为正(建议+1~+6)
-7) 不输出“不参与”选项
+# 生成要求
+1) 所有选项 self.health 必须为正数，建议 +4~+12。
+2) 每个选项必须有代价：self.wealth<0 或 self.reputation<0，至少一个为负；wealth建议 -0.5~-2。
+3) 选项差异体现在恢复幅度、代价结构和行动建议，不写冲突对骂。
+4) 每个选项写 summary，概括玩家如何修复状态并付出何种代价。
+5) 每个选项写 thread；修复行动通常closed，若引出关系沟通可open。
 
 # 输出JSON格式
 {
@@ -430,7 +363,7 @@ ${topicHints}
   "thread": {
     "threadId": "thr_xxx",
     "status": "open|closed",
-    "summary": "事件线变化一句话"
+    "summary": "修复主题或后续沟通悬念"
   },
   "title": "",
   "narrative": "",
@@ -439,6 +372,11 @@ ${topicHints}
       "id": "opt_a",
       "label": "",
       "description": "",
+      "summary": "林晓梅用一次高强度咨询稳住情绪，也为继续面对职场申诉付出了经济成本。",
+      "thread": {
+        "status": "closed",
+        "summary": "本次情绪危机已缓解，下一步回到现实协商。"
+      },
       "effects": {
         "self": {
           "health": 6,
@@ -452,7 +390,6 @@ ${topicHints}
           "allHealthDelta": 0
         },
         "meta": {
-          "survivalProgress": 3,
           "equalityProgress": 1,
           "major": false,
           "tag": "🛋️"
@@ -495,22 +432,37 @@ function buildTopicHints({ scene, subScene, relationshipStatus, gender }) {
   if (scene === "culture") {
     const key = subScene || "square";
     const list = pool.culture[key] || pool.culture.square;
-    return `scene=culture/${key}; topics=${list.join("、")}`;
+    return pickTopics(list).join("、");
   }
 
   const g = gender === "female" ? "female" : "male";
   const rs = relationshipStatus === "married" ? "married" : "single";
   const list = pool[scene]?.[rs]?.[g] || ["职场公平", "家庭分工", "公共争议"];
-  return `scene=${scene}; relationship=${rs}; gender=${g}; topics=${list.join("、")}`;
+  return pickTopics(list).join("、");
+}
+
+function pickTopics(list, count = 2) {
+  const source = Array.isArray(list) ? list.filter(Boolean) : [];
+  if (source.length <= count) return source;
+  const picked = new Set();
+  while (picked.size < count) {
+    picked.add(source[Math.floor(Math.random() * source.length)]);
+  }
+  return Array.from(picked);
 }
 
 export function buildCourtPrompt({ gameState, historySummary }) {
-  return `你是“天平叙事局”法庭主持AI。请生成当轮法庭议题与2个投票选项，输出严格JSON。
+  return `你是“天平叙事局”法庭主持AI。请生成一个公共规则争议和2个投票选项，输出严格JSON。
 
 round: ${gameState.round}
-currentGap: ${gameState.socialGap}
 历史摘要:
 ${historySummary}
+
+生成要求:
+1) 议题要和性别平等的制度规则有关，例如就业、家庭责任、公共表达、健康安全。
+2) 两个投票选项必须代表不同制度方向，不能只是措辞差异。
+3) self只填基础 health/reputation/wealth；全局变化体现规则通过后的社会影响。
+4) 每个选项写 summary，概括法庭投票造成的制度后果。
 
 输出JSON:
 {
@@ -522,20 +474,22 @@ ${historySummary}
       "id":"vote_a",
       "label":"通过改革",
       "description":"",
+      "summary":"法庭通过改革方案，让育儿责任不再默认压到女性一方。",
       "effects":{
         "self":{"health":-2,"reputation":3,"wealth":0},
         "global":{"socialGap":-3,"maleRights":1,"femaleRights":3,"allHealthDelta":-1},
-        "meta":{"survivalProgress":2,"equalityProgress":9,"major":true,"tag":"⚖️"}
+        "meta":{"equalityProgress":9,"major":true,"tag":"⚖️"}
       }
     },
     {
       "id":"vote_b",
       "label":"维持现状",
       "description":"",
+      "summary":"法庭维持现状，短期减少争执，却让家庭责任的不均衡继续存在。",
       "effects":{
         "self":{"health":0,"reputation":-2,"wealth":1},
         "global":{"socialGap":2,"maleRights":1,"femaleRights":0,"allHealthDelta":0},
-        "meta":{"survivalProgress":-2,"equalityProgress":-6,"major":true,"tag":"⚖️"}
+        "meta":{"equalityProgress":-6,"major":true,"tag":"⚖️"}
       }
     }
   ]
@@ -580,7 +534,7 @@ export function buildRelationshipPrompt({
   gameState,
   historySummary,
 }) {
-  return `你是“天平叙事局”关系系统AI，负责计算PVP互动的数值变化。输出严格JSON。
+  return `你是“天平叙事局”关系系统AI，负责生成玩家关系互动叙事和基础数值变化。输出严格JSON。
 
 action: ${action}
 round: ${gameState.round}
@@ -591,8 +545,6 @@ gender: ${initiator.gender}
 wealth: ${initiator.stats.wealth}
 health: ${initiator.stats.health}
 reputation: ${initiator.stats.reputation}
-rightsLevel: ${initiator.stats.rightsLevel}
-riskLevel: ${initiator.stats.riskLevel}
 
 target:
 name: ${target.name}
@@ -600,8 +552,6 @@ gender: ${target.gender}
 wealth: ${target.stats.wealth}
 health: ${target.stats.health}
 reputation: ${target.stats.reputation}
-rightsLevel: ${target.stats.rightsLevel}
-riskLevel: ${target.stats.riskLevel}
 
 历史摘要:
 ${historySummary}
@@ -611,14 +561,17 @@ ${historySummary}
 2) 结婚后双方财富进入共享池，离婚后对半分
 3) 结婚后新增 intimacy(0-100)
 4) 每次关系事件可对 intimacy 产生升降
+5) initiator/target 只生成基础 health/reputation/wealth 变化
+6) 写 summary，用一句话概括双方互动的故事结果
 
 输出JSON:
 {
   "title": "",
   "narrative": "",
+  "summary": "林晓梅向李航申请支持，双方把职场申诉变成一次具体的互助行动。",
   "effects": {
-    "initiator": {"health": -2, "reputation": 1, "wealth": -1, "survivalProgress": 2},
-    "target": {"health": 1, "reputation": 0, "wealth": 1, "survivalProgress": 1},
+    "initiator": {"health": -2, "reputation": 1, "wealth": -1},
+    "target": {"health": 1, "reputation": 0, "wealth": 1},
     "global": {"socialGap": -1, "maleRights": 1, "femaleRights": 1},
     "intimacyDelta": {"initiator": 6, "target": 4},
     "marriage": {"createSharedWealth": true, "initIntimacy": 62}
@@ -660,9 +613,10 @@ export function buildHistorySummary(events, playerId, gameState = null) {
     );
   });
 
-  lines.push("当前玩家近3次关键选择:");
+  lines.push("当前玩家近3次选择结果:");
   mine.slice(0, 3).forEach((e, i) => {
-    lines.push(`${i + 1}. ${e.title} -> ${e.choiceLabel}`);
+    const status = e.thread?.status ? ` [${e.thread.status}]` : "";
+    lines.push(`${i + 1}.${status} ${e.summary || `${e.title} -> ${e.choiceLabel || "未知选择"}`}`);
   });
 
   if (lines.length < 3) {

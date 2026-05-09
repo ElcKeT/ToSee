@@ -10,6 +10,7 @@ import {
   advanceTurn,
   applyEffects,
   applyLocalDelta,
+  calculateEffectiveDelta,
   applyRoundEvaluation,
   canOpenCounseling,
   checkWinOrLose,
@@ -68,24 +69,14 @@ function clampNum(v, min, max) {
   return Math.max(min, Math.min(max, Number(v || 0)));
 }
 
-function levelMultiplier(level) {
-  if (level === "low") return 0.6;
-  if (level === "high") return 1.5;
-  return 1;
+function displayNum(value) {
+  return String(Math.round(Number(value || 0)));
 }
 
-function applyPlayerStatMultipliersToOption(option, player) {
-  if (!player || !option?.effects?.self) return option;
-
-  const rightsFactor = levelMultiplier(player.stats?.rightsLevel);
-  const riskFactor = levelMultiplier(player.stats?.riskLevel);
-  const combined = rightsFactor * riskFactor;
-  const self = option.effects.self;
-
-  self.health = withOneDecimal(Number(self.health || 0) * combined);
-  self.reputation = withOneDecimal(Number(self.reputation || 0) * combined);
-  self.wealth = withOneDecimal(Number(self.wealth || 0) * combined);
-  return option;
+function displayLevel(level) {
+  if (level === "high") return "高";
+  if (level === "low") return "低";
+  return "中";
 }
 
 function setLoading(active, message = "正在生成剧情...") {
@@ -133,19 +124,28 @@ function esc(s) {
     .replaceAll(">", "&gt;");
 }
 
-function effectPreview(effects) {
+function effectPreview(effects, player = null) {
   const self = effects?.self || {};
   const global = effects?.global || {};
+  const combinedSelf = {
+    health: Number(self.health || 0) + Number(global.allHealthDelta || 0),
+    reputation: Number(self.reputation || 0),
+    wealth: Number(self.wealth || 0),
+  };
+  const effective = player ? calculateEffectiveDelta(player, combinedSelf) : combinedSelf;
   const chunks = [];
 
   const pushNum = (label, val) => {
     if (!val) return;
-    chunks.push(`${label}${val > 0 ? "+" : ""}${val}`);
+    const rounded = Math.round(Number(val || 0));
+    if (!rounded) return;
+    chunks.push(`${label}${rounded > 0 ? "+" : ""}${rounded}`);
   };
 
-  pushNum("健康", self.health || 0);
-  pushNum("名誉", self.reputation || 0);
-  pushNum("财富", self.wealth || 0);
+  pushNum("健康", effective.health || 0);
+  pushNum("名誉", effective.reputation || 0);
+  pushNum("财富", effective.wealth || 0);
+  pushNum("存活", effective.survivalProgress || effects?.meta?.survivalProgress || 0);
   pushNum("平等", -(global.socialGap || 0));
   if (effects?.intimacyDelta?.initiator || effects?.intimacyDelta?.target) {
     chunks.push(`亲密度Δ${(effects.intimacyDelta.initiator || 0) + (effects.intimacyDelta.target || 0)}`);
@@ -169,12 +169,12 @@ function renderLeftPanel() {
           </div>
           <div class="bio">${esc(p.bio)}</div>
           <div class="stat-grid">
-            <div class="stat">身心健康 <b class="${delta.health > 0 ? "delta-plus" : delta.health < 0 ? "delta-minus" : ""}">${p.stats.health}</b></div>
-            <div class="stat">社会名誉 <b class="${delta.reputation > 0 ? "delta-plus" : delta.reputation < 0 ? "delta-minus" : ""}">${p.stats.reputation}</b></div>
-            <div class="stat">财富(万) <b class="${delta.wealth > 0 ? "delta-plus" : delta.wealth < 0 ? "delta-minus" : ""}">${p.stats.wealth}</b></div>
-            <div class="stat">存活进度 <b class="${delta.survivalProgress > 0 ? "delta-plus" : delta.survivalProgress < 0 ? "delta-minus" : ""}">${p.survivalProgress}</b></div>
-            <div class="stat">权利指数 <b>${p.stats.rightsLevel}</b></div>
-            <div class="stat">风险等级 <b>${p.stats.riskLevel}</b></div>
+            <div class="stat">身心健康 <b class="${delta.health > 0 ? "delta-plus" : delta.health < 0 ? "delta-minus" : ""}">${displayNum(p.stats.health)}</b></div>
+            <div class="stat">社会名誉 <b class="${delta.reputation > 0 ? "delta-plus" : delta.reputation < 0 ? "delta-minus" : ""}">${displayNum(p.stats.reputation)}</b></div>
+            <div class="stat">财富(万) <b class="${delta.wealth > 0 ? "delta-plus" : delta.wealth < 0 ? "delta-minus" : ""}">${displayNum(p.stats.wealth)}</b></div>
+            <div class="stat">存活进度 <b class="${delta.survivalProgress > 0 ? "delta-plus" : delta.survivalProgress < 0 ? "delta-minus" : ""}">${displayNum(p.survivalProgress)}</b></div>
+            <div class="stat">权利指数 <b>${displayLevel(p.stats.rightsLevel)}</b></div>
+            <div class="stat">风险等级 <b>${displayLevel(p.stats.riskLevel)}</b></div>
           </div>
           <div class="tag-row">
             ${p.marriedTo ? `<span class="tag">婚姻: ${esc(state.players.find((x) => x.id === p.marriedTo)?.name || "未知")}</span>` : '<span class="tag">婚姻: 无</span>'}
@@ -245,7 +245,7 @@ function syncBoardAvailability() {
       }
       if (scene === "opportunity" && state.round < 10) allowed = false;
     } else {
-      if (!["culture", "meditate"].includes(scene)) {
+      if (!["culture", "pvp", "meditate"].includes(scene)) {
         allowed = false;
       }
     }
@@ -338,10 +338,6 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
     safe.effects.meta.tag = "🗣️";
   }
 
-  if (!isNoDiscuss) {
-    applyPlayerStatMultipliersToOption(safe, player);
-  }
-
   if (scene === "culture" && subScene === "library" && !isNoDiscuss) {
     const h = Number(safe.effects.self.health || 0);
     const r = Number(safe.effects.self.reputation || 0);
@@ -396,6 +392,15 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
   safe.effects.meta.equalityProgress = Math.round(clampNum(safe.effects.meta.equalityProgress, -20, 20));
   safe.effects.meta.tag = String(safe.effects.meta.tag || "📌");
 
+  if (player) {
+    const effective = calculateEffectiveDelta(player, {
+      health: Number(safe.effects.self.health || 0) + Number(safe.effects.global.allHealthDelta || 0),
+      reputation: safe.effects.self.reputation || 0,
+      wealth: safe.effects.self.wealth || 0,
+    });
+    safe.effects.meta.survivalProgress = Math.round(effective.survivalProgress || 0);
+  }
+
   return safe;
 }
 
@@ -411,6 +416,8 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
         id: "fallback_opt",
         label: "保持谨慎",
         description: "避免极端损益",
+        summary: `${player?.name || "玩家"}在${safe.title}中选择谨慎处理，暂时稳住局面。`,
+        thread: { status: "closed", summary: "事件以谨慎方式收束，暂无后续悬念。" },
         effects: {
           self: { health: -1, reputation: 0, wealth: 0 },
           global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
@@ -425,6 +432,9 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
     status: "open",
     summary: "自动补全事件线",
   };
+  safe.thread.threadId = String(safe.thread.threadId || `thr_${Date.now()}`);
+  safe.thread.status = ["open", "closed"].includes(safe.thread.status) ? safe.thread.status : "open";
+  safe.thread.summary = String(safe.thread.summary || "事件线状态待观察。").slice(0, 120);
 
   if (scene === "culture" && subScene === "square") {
     safe.options = safe.options.filter((opt) => opt?.id !== "opt_no_discuss");
@@ -432,6 +442,8 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
       id: "opt_no_discuss",
       label: "不参与讨论",
       description: "保持沉默并离场，固定承受-3点身心健康值。",
+      summary: `${player?.name || "玩家"}没有参与这场公共争议，选择把注意力收回到自身状态。`,
+      thread: { status: "closed", summary: "玩家未介入公共讨论，事件线不再延展。" },
       effects: {
         self: { health: -3, reputation: 0, wealth: 0 },
         global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
@@ -440,7 +452,22 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
     });
   }
 
-  safe.options = safe.options.map((opt) => sanitizeOptionEffects(opt, scene, subScene, player));
+  safe.options = safe.options.map((opt) => {
+    const normalized = sanitizeOptionEffects(opt, scene, subScene, player);
+    normalized.summary = String(
+      normalized.summary ||
+        `${player?.name || "玩家"}在“${safe.title}”中选择“${normalized.label || "行动"}”，事件留下新的影响。`
+    ).slice(0, 120);
+    normalized.thread = normalized.thread && typeof normalized.thread === "object" ? normalized.thread : {};
+    normalized.thread.status = ["open", "closed"].includes(normalized.thread.status)
+      ? normalized.thread.status
+      : safe.thread.status;
+    normalized.thread.summary = String(normalized.thread.summary || safe.thread.summary || "事件线状态已更新。").slice(
+      0,
+      120
+    );
+    return normalized;
+  });
   return safe;
 }
 
@@ -449,7 +476,13 @@ function handleOptionChoose(eventData, option) {
 
   applyEffects(state, player.id, option.effects);
 
-  const summary = `${eventData.title} -> ${option.label}`;
+  const summary = option.summary || `${eventData.title} -> ${option.label}`;
+  const thread = {
+    ...eventData.thread,
+    ...(option.thread || {}),
+    threadId: eventData.thread?.threadId || `thr_${Date.now()}`,
+  };
+
   state.events.unshift({
     round: state.round,
     playerId: player.id,
@@ -459,7 +492,8 @@ function handleOptionChoose(eventData, option) {
     summary,
     title: eventData.title,
     choiceLabel: option.label,
-    thread: eventData.thread,
+    narrative: eventData.narrative,
+    thread,
   });
 
   logRoundDecision(state, {
@@ -470,14 +504,6 @@ function handleOptionChoose(eventData, option) {
     choice: option.label,
     summary,
   });
-
-  if (option.effects?.meta?.major) {
-    addFeed({
-      player,
-      tag: option.effects.meta.tag || "📌",
-      summary,
-    });
-  }
 
   closeModal();
   void endActionAndMaybeAdvance();
@@ -635,6 +661,8 @@ function openCultureSelector(player) {
 }
 
 function showEventModal(eventData) {
+  const player = state.players[state.currentPlayerIndex];
+
   openModal(eventData.title, (body) => {
     const para = document.createElement("p");
     para.textContent = eventData.narrative;
@@ -644,7 +672,7 @@ function showEventModal(eventData) {
       const node = el.optionTemplate.content.firstElementChild.cloneNode(true);
       node.querySelector(".option-title").textContent = opt.label;
       node.querySelector(".option-desc").textContent = opt.description || "";
-      node.querySelector(".option-impact").textContent = effectPreview(opt.effects);
+      node.querySelector(".option-impact").textContent = effectPreview(opt.effects, player);
       node.onclick = () => handleOptionChoose(eventData, opt);
       body.appendChild(node);
     });
@@ -726,7 +754,7 @@ function openMandatoryCourtModal() {
       const node = el.optionTemplate.content.firstElementChild.cloneNode(true);
       node.querySelector(".option-title").textContent = opt.label;
       node.querySelector(".option-desc").textContent = opt.description || "";
-      node.querySelector(".option-impact").textContent = effectPreview(opt.effects);
+      node.querySelector(".option-impact").textContent = effectPreview(opt.effects, voter);
       node.onclick = () => castCourtVote(opt, voter);
       body.appendChild(node);
     });
@@ -752,7 +780,7 @@ function castCourtVote(option, voter) {
     playerName: voter.name,
     scene: "court",
     choice: option.label,
-    summary: `${voter.name}法庭投票: ${option.label}`,
+    summary: option.summary || `${voter.name}法庭投票: ${option.label}`,
   });
 
   addFeed({
@@ -785,11 +813,19 @@ function finalizeCourtVote() {
   if (top[1] > second[1]) {
     const winner = session.eventData.options.find((x) => x.id === top[0]);
     if (winner) {
-      state.players.forEach((p2) => applyEffects(state, p2.id, winner.effects));
+      state.players.forEach((p2, idx) => {
+        applyEffects(state, p2.id, {
+          ...winner.effects,
+          global:
+            idx === 0
+              ? winner.effects.global
+              : { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
+        });
+      });
       addFeed({
         player: state.players[0],
         tag: "⚖️",
-        summary: `法庭多数决通过：${winner.label}（${top[1]}票）。`,
+        summary: winner.summary || `法庭多数决通过：${winner.label}（${top[1]}票）。`,
       });
     }
   } else {
@@ -872,7 +908,9 @@ function pickTargetAndResolve(action, initiator, candidates) {
     candidates.forEach((c) => {
       const btn = document.createElement("button");
       btn.className = "option-btn";
-      btn.innerHTML = `<div class="option-title">${c.name}</div><div class="option-desc">${c.gender === "male" ? "男" : "女"} | 财富${c.stats.wealth} | 健康${c.stats.health}</div>`;
+      btn.innerHTML = `<div class="option-title">${c.name}</div><div class="option-desc">${
+        c.gender === "male" ? "男" : "女"
+      } | 财富${displayNum(c.stats.wealth)} | 健康${displayNum(c.stats.health)}</div>`;
       btn.onclick = async () => {
         await resolveRelationshipAndApply(action, initiator, c);
       };
@@ -936,7 +974,7 @@ async function resolveRelationshipAndApply(action, initiator, target) {
 
   markPlayersLinkedByPvp(state, initiator.id, target.id);
 
-  const summary = `${initiator.name}与${target.name}：${result.title || action}`;
+  const summary = result.summary || `${initiator.name}与${target.name}：${result.title || action}`;
   logRoundDecision(state, {
     round: state.round,
     playerId: initiator.id,
@@ -1068,13 +1106,13 @@ async function detectRuntimeStatus() {
     if (!info?.hasApiKey) {
       return {
         mode: "mock",
-        message: "检测到后端代理，但未读取到 OPENROUTER_API_KEY，将使用Mock事件。",
+        message: "检测到后端代理，但未读取到 DEEPSEEK_API_KEY，将使用Mock事件。",
       };
     }
 
     return {
       mode: "online",
-      message: `已连接OpenRouter模型：${info.model}`,
+      message: `已连接DeepSeek模型：${info.model}`,
     };
   } catch {
     return {

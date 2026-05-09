@@ -5,13 +5,14 @@ import path from "path";
 import crypto from "crypto";
 import OpenAI from "openai";
 
-const baseURL = process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1";
-const model = process.env.OPENROUTER_MODEL || "stepfun/step-3.5-flash:free";
+const baseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com";
+const model = process.env.DEEPSEEK_MODEL || "deepseek-v4-pro";
 const requestTimeoutMs = Number(process.env.LLM_REQUEST_TIMEOUT_MS || 90000);
+const maxTokens = Number(process.env.LLM_MAX_TOKENS || 4096);
 
 const client = new OpenAI({
   baseURL,
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.DEEPSEEK_API_KEY || "missing-deepseek-api-key",
 });
 
 const CANONICAL_THEMES = [
@@ -337,8 +338,18 @@ async function callLlmJson(prompt) {
   const response = await Promise.race([
     client.chat.completions.create({
       model,
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        {
+          role: "system",
+          content: "你是一个只输出合法 JSON 对象的助手。不要输出解释、Markdown 或 JSON 以外的文本。",
+        },
+        { role: "user", content: prompt },
+      ],
       response_format: { type: "json_object" },
+      thinking: { type: "enabled" },
+      reasoning_effort: "high",
+      stream: false,
+      max_tokens: maxTokens,
       temperature: 0.7,
     }),
     new Promise((_, reject) => {
@@ -482,8 +493,8 @@ async function main() {
     return;
   }
 
-  if (!args.dryRun && !process.env.OPENROUTER_API_KEY) {
-    throw new Error("未配置 OPENROUTER_API_KEY，无法调用模型。可加 --dryRun 仅看切分结果。");
+  if (!args.dryRun && !process.env.DEEPSEEK_API_KEY) {
+    throw new Error("未配置 DEEPSEEK_API_KEY，无法调用模型。可加 --dryRun 仅看切分结果。");
   }
 
   await fs.mkdir(outputDir, { recursive: true });

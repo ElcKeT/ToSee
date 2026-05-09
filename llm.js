@@ -465,23 +465,45 @@ const MOCK_JOBS = [
   "社区社工",
 ];
 
-function pickLevelByScore(score) {
-  if (score >= 0.67) return "high";
-  if (score >= 0.34) return "mid";
-  return "low";
+function deriveLevelsFromReputation(reputation) {
+  const value = Number(reputation || 0);
+  if (value >= 50) return { rightsLevel: "high", riskLevel: "low" };
+  if (value <= -50) return { rightsLevel: "low", riskLevel: "high" };
+  return { rightsLevel: "mid", riskLevel: "mid" };
+}
+
+function calcInitialSurvivalProgress(stats) {
+  const rightsSurvival = stats.rightsLevel === "high" ? 5 : stats.rightsLevel === "mid" ? 3 : 0;
+  const riskPenalty = stats.riskLevel === "high" ? -3 : stats.riskLevel === "mid" ? -1 : 0;
+  return clamp(
+    Math.max(
+      10,
+      Number(stats.health || 0) * 0.4 +
+        Number(stats.reputation || 0) * 0.3 +
+        Number(stats.wealth || 0) * 0.2 +
+        rightsSurvival +
+        riskPenalty
+    ),
+    0,
+    100
+  );
 }
 
 function buildMockCharacter(gender, ageBase, idx) {
   const name = randomFrom(MOCK_NAMES[gender]);
   const age = clamp(ageBase + Math.floor(Math.random() * 10) - 4, 22, 39);
-  const rightsScore = Math.random();
-  const riskScore = Math.random();
   const job = randomFrom(MOCK_JOBS);
   const cityTier = randomFrom(["一线", "新一线", "二线"]);
   const classLevel = randomFrom(["工薪", "中产边缘", "普通中产"]);
   const valuesFamily = randomFrom(["traditional", "autonomous", "mixed"]);
   const valuesFairness = randomFrom(["result", "opportunity", "freedom"]);
   const valuesReform = randomFrom(["radical", "moderate", "skeptical"]);
+  const stats = {
+    health: Math.floor(48 + Math.random() * 42),
+    reputation: Math.floor(-70 + Math.random() * 141),
+    wealth: roundTo1(-8 + Math.random() * 68),
+  };
+  Object.assign(stats, deriveLevelsFromReputation(stats.reputation));
   return {
     name: `${name}${idx > 2 ? "" : ""}`,
     gender,
@@ -510,14 +532,8 @@ function buildMockCharacter(gender, ageBase, idx) {
       gender === "female"
         ? "争取职业成长并避免被家庭角色固定化"
         : "拒绝单一养家角色，争取照料责任与工作权利平衡",
-    stats: {
-      health: Math.floor(48 + Math.random() * 42),
-      reputation: Math.floor(-30 + Math.random() * 70),
-      wealth: roundTo1(-8 + Math.random() * 68),
-      rightsLevel: pickLevelByScore(rightsScore),
-      riskLevel: pickLevelByScore(riskScore),
-    },
-    survivalProgress: Math.floor(42 + Math.random() * 30),
+    stats,
+    survivalProgress: calcInitialSurvivalProgress(stats),
   };
 }
 
@@ -539,6 +555,11 @@ function normalizeInitResult(raw) {
 
   const players = rows.map((p, idx) => {
     const gender = p?.gender === "female" ? "female" : "male";
+    const health = clamp(Number(p?.stats?.health || 65), 0, 100);
+    const reputation = clamp(Number(p?.stats?.reputation || 0), -100, 100);
+    const wealth = roundTo1(Number(p?.stats?.wealth ?? 10));
+    const levels = deriveLevelsFromReputation(reputation);
+    const stats = { health, reputation, wealth, ...levels };
     return {
       name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
       gender,
@@ -569,18 +590,8 @@ function normalizeInitResult(raw) {
       conflictHooks: Array.isArray(p?.conflictHooks) ? p.conflictHooks.slice(0, 3) : ["关键抉择冲突待触发"],
       stance: ["left", "center", "right"].includes(p?.stance) ? p.stance : "center",
       survivalTask: String(p?.survivalTask || "在20回合内保持身心稳定并争取平等空间").slice(0, 60),
-      stats: {
-        health: clamp(Number(p?.stats?.health || 65), 10, 100),
-        reputation: clamp(Number(p?.stats?.reputation || 0), -100, 100),
-        wealth: roundTo1(clamp(Number(p?.stats?.wealth || 10), -30, 150)),
-        rightsLevel: ["low", "mid", "high"].includes(p?.stats?.rightsLevel)
-          ? p.stats.rightsLevel
-          : "mid",
-        riskLevel: ["low", "mid", "high"].includes(p?.stats?.riskLevel)
-          ? p.stats.riskLevel
-          : "mid",
-      },
-      survivalProgress: clamp(Number(p?.survivalProgress || 60), 35, 80),
+      stats,
+      survivalProgress: calcInitialSurvivalProgress(stats),
     };
   });
 
@@ -602,6 +613,10 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
   const fallback = buildMockCharacter(expectedGender, 27, idx);
   const gender = expectedGender === "female" ? "female" : "male";
   const p = rawPlayer || {};
+  const health = clamp(Number(p?.stats?.health || fallback.stats.health || 65), 0, 100);
+  const reputation = clamp(Number(p?.stats?.reputation || fallback.stats.reputation || 0), -100, 100);
+  const wealth = roundTo1(Number(p?.stats?.wealth ?? fallback.stats.wealth ?? 10));
+  const stats = { health, reputation, wealth, ...deriveLevelsFromReputation(reputation) };
 
   return {
     name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
@@ -642,18 +657,8 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
       0,
       60
     ),
-    stats: {
-      health: clamp(Number(p?.stats?.health || fallback.stats.health || 65), 10, 100),
-      reputation: clamp(Number(p?.stats?.reputation || fallback.stats.reputation || 0), -100, 100),
-      wealth: roundTo1(clamp(Number(p?.stats?.wealth || fallback.stats.wealth || 10), -30, 150)),
-      rightsLevel: ["low", "mid", "high"].includes(p?.stats?.rightsLevel)
-        ? p.stats.rightsLevel
-        : fallback.stats.rightsLevel,
-      riskLevel: ["low", "mid", "high"].includes(p?.stats?.riskLevel)
-        ? p.stats.riskLevel
-        : fallback.stats.riskLevel,
-    },
-    survivalProgress: clamp(Number(p?.survivalProgress || fallback.survivalProgress || 60), 35, 80),
+    stats,
+    survivalProgress: calcInitialSurvivalProgress(stats),
   };
 }
 
@@ -754,11 +759,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
   }
 
   const title = randomFrom(titles[scene] || titles.workplace);
-  const riskBuff = player.stats.riskLevel === "high" ? 1.5 : player.stats.riskLevel === "mid" ? 1 : 0.6;
-  const rightsBuff =
-    player.stats.rightsLevel === "high" ? 1.5 : player.stats.rightsLevel === "mid" ? 1 : 0.6;
-
-  const base = Math.round((Math.random() * 8 + 4) * riskBuff * rightsBuff);
+  const base = Math.round(Math.random() * 8 + 4);
 
   const options = [
     {
@@ -954,8 +955,8 @@ function mockRelationship({ action, initiator, target }) {
       title: "关系缔结",
       narrative: "两位玩家决定进入婚姻关系，系统将财富池合并并引入亲密度。",
       effects: {
-        initiator: { health: -1, reputation: 1, wealth: 0, survivalProgress: 1 },
-        target: { health: femaleBoost, reputation: 1, wealth: 0, survivalProgress: 1 },
+        initiator: { health: -1, reputation: 1, wealth: 0, survivalProgress: 0 },
+        target: { health: femaleBoost, reputation: 1, wealth: 0, survivalProgress: 0 },
         global: { socialGap: -1, maleRights: 1, femaleRights: 1 },
         intimacyDelta: { initiator: 8, target: 8 },
         marriage: { createSharedWealth: true, initIntimacy: 60 + Math.round(wealthFactor * 18) },
@@ -969,8 +970,8 @@ function mockRelationship({ action, initiator, target }) {
       title: "关系解除",
       narrative: "双方决定离婚，财富池将平分，亲密度关系终止。",
       effects: {
-        initiator: { health: -4, reputation: -2, wealth: 0, survivalProgress: -2 },
-        target: { health: -3, reputation: -2, wealth: 0, survivalProgress: -1 },
+        initiator: { health: -4, reputation: -2, wealth: 0, survivalProgress: 0 },
+        target: { health: -3, reputation: -2, wealth: 0, survivalProgress: 0 },
         global: { socialGap: 1, maleRights: 0, femaleRights: 0 },
         intimacyDelta: { initiator: -50, target: -50 },
         marriage: { createSharedWealth: false, initIntimacy: 0 },
@@ -983,7 +984,7 @@ function mockRelationship({ action, initiator, target }) {
     title: "社会支持互动",
     narrative: "求助方发起援助申请，提供方决定伸出援手。",
     effects: {
-      initiator: { health: 4, reputation: 1, wealth: 2, survivalProgress: 2 },
+      initiator: { health: 4, reputation: 1, wealth: 2, survivalProgress: 0 },
       target: { health: -1, reputation: 2, wealth: -2, survivalProgress: 0 },
       global: { socialGap: -1, maleRights: 0, femaleRights: 1 },
       intimacyDelta: { initiator: 3, target: 2 },
