@@ -3,21 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>天平叙事局 - 轻量文字桌游 Demo</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap"
-      rel="stylesheet"
-    />
+    <title>看见 - 性别平等在线游戏</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
+    <div id="screenLayer" class="screen-layer"></div>
+
     <div class="bg-shape bg-shape-a"></div>
     <div class="bg-shape bg-shape-b"></div>
 
-    <header class="topbar">
-      <div class="game-title">天平叙事局</div>
+    <header class="topbar game-view hidden">
+      <div class="game-title">看见</div>
       <div class="balance-wrap">
         <div class="balance-head">
           <span>男性权益</span>
@@ -37,7 +33,7 @@
       </div>
     </header>
 
-    <main class="layout">
+    <main class="layout game-view hidden">
       <aside class="left-panel" id="leftPanel"></aside>
 
       <section class="center-panel">
@@ -87,7 +83,7 @@
       </aside>
     </main>
 
-    <button class="mobile-player-fab" id="mobileFab">玩家面板</button>
+    <button class="mobile-player-fab game-view hidden" id="mobileFab">玩家面板</button>
 
     <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
       <div class="loading-card">

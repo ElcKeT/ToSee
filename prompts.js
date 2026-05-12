@@ -1,4 +1,11 @@
-export function buildCharacterInitPrompt({ targetGender, generatedPlayers = [] } = {}) {
+export function buildCharacterInitPrompt({ targetGender, slot = 1, generatedPlayers = [] } = {}) {
+  const expectedGender = targetGender === "female" ? "female" : "male";
+  const slotProfiles = {
+    1: "1号玩家，真实玩家视角，需要有清晰的个人目标、现实压力和可持续事件钩子。",
+    2: "2号玩家，模拟真人玩家，需要与1号在职业、阶层、家庭关系或价值观上形成差异。",
+    3: "3号玩家，AI托管玩家，需要具备鲜明但不过度极端的选择倾向。",
+    4: "4号玩家，AI托管玩家，需要补足本局阵容差异，避免和其他座位同质化。",
+  };
   const historyLines = generatedPlayers.length
     ? generatedPlayers
         .map(
@@ -6,29 +13,30 @@ export function buildCharacterInitPrompt({ targetGender, generatedPlayers = [] }
             `${idx + 1}. ${p.name || "未命名"} | ${p.gender} | ${p.age}岁 | ${p.job} | ${p.classLevel} | stance=${p.stance}`
         )
         .join("\n")
-    : "(无，当前是首个角色)";
+    : "(并行生成模式下可能为空；请依据座位设定主动差异化)";
 
-  const expectedGender = targetGender === "female" ? "female" : "male";
-
-  return `你是选择驱动的性别平等文字游戏“天平叙事局”的角色生成器。当前任务是“分4轮生成角色中的第${
-    generatedPlayers.length + 1
-  }轮”。本轮只生成1名角色，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，玩家将在普通人的生活、职场、家庭和公共议题中做出选择，并观察个人生存与社会平等如何互相影响。
+当前任务是为本局4人游戏生成第${slot}号座位的初始角色。本次只生成1名角色，输出严格JSON。
 
 硬性约束:
 1) 本局总人数固定4人，最终必须2男2女
-2) 本轮角色gender必须是: ${expectedGender}
+2) 第${slot}号角色gender必须是: ${expectedGender}
 3) 年龄必须在20~35之间
 4) 初始状态全部为单身，禁止出现已婚/已有家庭(妻子/丈夫/儿子/女儿)
 5) 角色社会条件保持普通人尺度，不写极端悬殊或猎奇背景
-6) bio不超过80字
+6) bio在80字左右
+7) survivalTask必须用10个字左右总结该角色的主要生存目标/面临的主要矛盾
 
-已生成角色(用于差异化):
+座位设定:
+${slotProfiles[slot] || slotProfiles[1]}
+
+并行差异化参考:
 ${historyLines}
 
 本轮重点:
-- 与历史角色在职业、阶层、家庭关系、价值观和冲突槽位上拉开差异
+- 主动与其他座位在职业、阶层、家庭关系、价值观和冲突槽位上拉开差异
 - 写出可持续触发事件的欲望、压力和矛盾，不要只写标签
-- stats只包含 health、reputation、wealth
+- stats只包含 health、reputation、wealth，其数值要符合其bio
 
 数值约束:
 - health: 10~100
@@ -44,7 +52,7 @@ ${historyLines}
     "job": "",
     "cityTier": "",
     "classLevel": "",
-    "bio": "80字内",
+    "bio": "80字左右",
     "familyRelation": "",
     "keyEvents": ["", ""],
     "values": {
@@ -59,9 +67,9 @@ ${historyLines}
     "stance": "left|center|right",
     "survivalTask": "",
     "stats": {
-      "health": 72,
-      "reputation": -10,
-      "wealth": 24
+      "health": int,
+      "reputation": int,
+      "wealth": int
     }
   }
 }`;
@@ -82,7 +90,8 @@ export function buildScenePrompt({
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”的剧情主持AI。游戏是选择驱动的性别平等文字游戏。请为当前玩家生成一个事件和2-3个选项，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，玩家通过普通人的生活选择观察个人生存、关系压力和社会平等的变化。
+当前任务是为当前玩家生成一个场景事件和2-3个选项，输出严格JSON。
 
 # 场景
 ${scene}${subScene ? `/${subScene}` : ""}
@@ -118,6 +127,7 @@ ${historySummary}
 4) self只填基础 health/reputation/wealth 变化，wealth单位为万元；普通事件 wealth 建议在 -1.5~+1.5 内。
 5) 每个选项都写 summary：人物+处境+选择+意义的1句话，用于经历手账。
 6) 每个选项都写 thread：该选项发生后的故事线状态和下一步悬念；若冲突已解决可closed。
+7) 普通场景事件只影响当前玩家自己的基础指标；global只表达社会权益方向变化，禁止输出 allHealthDelta。
 
 # 输出JSON格式
 {
@@ -148,8 +158,7 @@ ${historySummary}
         "global": {
           "socialGap": -2,
           "maleRights": 1,
-          "femaleRights": 2,
-          "allHealthDelta": -3
+          "femaleRights": 2
         },
         "meta": {
           "equalityProgress": 8,
@@ -170,7 +179,8 @@ export function buildCultureSquarePrompt({ player, gameState, historySummary }) 
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”文化广场主持AI。请生成一个架空公共争议事件和2-3个讨论立场选项，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，文化广场用于呈现公共议题、舆论分歧和表达代价。
+当前任务是生成一个架空公共争议事件和2-3个讨论立场选项，输出严格JSON。
 
 # 场景
 culture/square
@@ -250,7 +260,8 @@ export function buildCultureLibraryPrompt({ player, gameState, historySummary })
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”图书馆主持AI。请生成一个知识学习/实践事件和2-3个选项，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，图书馆用于呈现知识学习、方法练习和现实协商能力。
+当前任务是生成一个知识学习/实践事件和2-3个选项，输出严格JSON。
 
 # 场景
 culture/library
@@ -329,7 +340,8 @@ export function buildCultureCounselingPrompt({ player, gameState, historySummary
     gender: player.gender,
   });
 
-  return `你是“天平叙事局”咨询室主持AI。请生成一个付出代价换取身心修复的低冲突事件和2-3个干预选项，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，咨询室用于呈现压力识别、情绪修复和现实边界协商。
+当前任务是生成一个付出代价换取身心修复的低冲突事件和2-3个干预选项，输出严格JSON。
 
 # 场景
 culture/counseling
@@ -452,7 +464,8 @@ function pickTopics(list, count = 2) {
 }
 
 export function buildCourtPrompt({ gameState, historySummary }) {
-  return `你是“天平叙事局”法庭主持AI。请生成一个公共规则争议和2个投票选项，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，法庭用于讨论制度规则、公共责任和权利分配。
+当前任务是生成一个公共规则争议和2个投票选项，输出严格JSON。
 
 round: ${gameState.round}
 历史摘要:
@@ -497,7 +510,8 @@ ${historySummary}
 }
 
 export function buildRoundEvaluationPrompt({ gameState, roundChoicesText }) {
-  return `你是“天平叙事局”的回合结算AI。请根据本轮全部玩家选择，评估社会权利7维变化，输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，本局每回合会汇总所有玩家选择并观察社会权利结构变化。
+当前任务是根据本轮全部玩家选择，评估社会权利7维变化，输出严格JSON。
 
 当前回合: ${gameState.round}
 当前社会权利差值: ${gameState.socialGap}
@@ -534,7 +548,8 @@ export function buildRelationshipPrompt({
   gameState,
   historySummary,
 }) {
-  return `你是“天平叙事局”关系系统AI，负责生成玩家关系互动叙事和基础数值变化。输出严格JSON。
+  return `《看见》是一款大模型驱动的性别平等选择游戏，关系系统用于处理玩家之间的结婚、离婚与社会支持互动。
+当前任务是生成玩家关系互动叙事和基础数值变化。输出严格JSON。
 
 action: ${action}
 round: ${gameState.round}

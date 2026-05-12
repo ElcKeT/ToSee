@@ -47,7 +47,7 @@ function nextLlmReqId() {
 async function callServerLlm(prompt) {
   const reqId = nextLlmReqId();
   const startedAt = performance.now();
-  const timeoutMs = 120000;
+  const timeoutMs = 180000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -1017,30 +1017,50 @@ export async function resolveRelationshipAction(params, apiKey) {
   }
 }
 
-export async function generateInitialCharacters(apiKey) {
+export async function generateInitialCharacter({ slot = 1, targetGender = "male", generatedPlayers = [] } = {}, apiKey) {
+  const idx = Math.max(0, Number(slot || 1) - 1);
+  const expectedGender = targetGender === "female" ? "female" : "male";
+
   if (!apiKey) {
-    return mockInitialCharacters();
+    return {
+      player: normalizeSingleInitPlayer(null, idx, expectedGender),
+    };
   }
 
   try {
-    const targetGenders = ["male", "female", "male", "female"];
-    const players = [];
+    const prompt = buildCharacterInitPrompt({
+      targetGender: expectedGender,
+      slot: idx + 1,
+      generatedPlayers,
+    });
+    const raw = await callServerLlm(prompt);
+    const rawPlayer = raw?.player || (Array.isArray(raw?.players) ? raw.players[0] : raw);
+    return {
+      player: normalizeSingleInitPlayer(rawPlayer, idx, expectedGender),
+    };
+  } catch (error) {
+    console.warn(`第${idx + 1}个角色生成失败，自动回退到Mock:`, error);
+    return {
+      player: normalizeSingleInitPlayer(null, idx, expectedGender),
+    };
+  }
+}
 
-    for (let i = 0; i < targetGenders.length; i += 1) {
-      const targetGender = targetGenders[i];
-      try {
-        const prompt = buildCharacterInitPrompt({
-          targetGender,
-          generatedPlayers: players,
-        });
-        const raw = await callServerLlm(prompt);
-        const rawPlayer = raw?.player || (Array.isArray(raw?.players) ? raw.players[0] : raw);
-        players.push(normalizeSingleInitPlayer(rawPlayer, i, targetGender));
-      } catch (innerError) {
-        console.warn(`第${i + 1}个角色生成失败，自动回退到Mock:`, innerError);
-        players.push(normalizeSingleInitPlayer(null, i, targetGender));
-      }
-    }
+export async function generateInitialCharacters(apiKey) {
+  try {
+    const targetGenders = ["male", "female", "male", "female"];
+    const rows = await Promise.all(
+      targetGenders.map((targetGender, idx) =>
+        generateInitialCharacter(
+          {
+            slot: idx + 1,
+            targetGender,
+          },
+          apiKey
+        )
+      )
+    );
+    const players = rows.map((row, idx) => row?.player || normalizeSingleInitPlayer(null, idx, targetGenders[idx]));
 
     return normalizeInitResult({ players });
   } catch (error) {

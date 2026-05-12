@@ -11,7 +11,7 @@ const app = express();
 const port = Number(process.env.PORT || 8080);
 const baseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com";
 const model = process.env.DEEPSEEK_MODEL || "deepseek-v4-pro";
-const requestTimeoutMs = Number(process.env.LLM_REQUEST_TIMEOUT_MS || 90000);
+const requestTimeoutMs = Number(process.env.LLM_REQUEST_TIMEOUT_MS || 180000);
 const maxTokens = Number(process.env.LLM_MAX_TOKENS || 4096);
 
 if (!process.env.DEEPSEEK_API_KEY) {
@@ -87,8 +87,8 @@ app.post("/api/llm", async (req, res) => {
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
-        thinking: { type: "enabled" },
-        reasoning_effort: "high",
+        thinking: { type: "disabled" },
+        //reasoning_effort: "high",
         stream: false,
         max_tokens: maxTokens,
         temperature: 0.7,
@@ -123,5 +123,5 @@ app.get("*", (_, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Demo server running at http://localhost:${port}`);
+  console.log(`《看见》server running at http://localhost:${port}`);
 });
