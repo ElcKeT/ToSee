@@ -62,7 +62,7 @@
           <button class="board-card" data-scene="opportunity">
             <span class="icon">🎲</span>
             <h3>人生机遇场</h3>
-            <p>第10轮后开放，获取道具或破局</p>
+            <p>第6轮后开放，获取道具或破局</p>
           </button>
           <button class="board-card" data-scene="pvp">
             <span class="icon">🤝</span>
@@ -86,10 +86,18 @@
     <button class="mobile-player-fab game-view hidden" id="mobileFab">玩家面板</button>
 
     <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
-      <div class="loading-card">
-        <div class="loading-spinner"></div>
-        <div id="loadingText">AI正在生成内容...</div>
-        <small>处理中，请稍候</small>
+      <div id="loadingFrame" class="loading-design-frame">
+        <img class="loading-design-asset loading-design-mask" src="./image_UI/动画遮罩.png" alt="" />
+        <img class="loading-design-asset loading-design-bg" src="./image_UI/动画背景.png" alt="" />
+        <div id="loadingText" class="loading-design-text">故事正在生成中...</div>
+        <video
+          id="loadingVideo"
+          class="loading-design-video"
+          src="./image_UI/加载动画.mp4"
+          autoplay
+          loop
+          playsinline
+        ></video>
       </div>
     </div>
 

@@ -56,10 +56,12 @@ export function createInitialStateFromPlayers(inputPlayers) {
     },
     sharedWealthPools: {},
     nextPoolId: 1,
+    activeFortuneSwaps: [],
     players,
     acquaintances: {},
     events: [],
     roundDecisionLog: [],
+    courtRecords: [],
     winner: null,
   };
 }
@@ -141,6 +143,11 @@ function buildPlayerFromSeed(seed, idx) {
     survivalProgress: calcInitialSurvivalProgress(stats),
     counselingUsed: 0,
     items: [],
+    itemUseRoundByType: {},
+    supportUseCount: 0,
+    fortuneSwapUseCount: 0,
+    fortuneSwapTargeted: false,
+    opportunityUsed: false,
     marriedTo: null,
     intimacy: 0,
     sharedWealthId: null,
@@ -185,6 +192,12 @@ export function deriveLevelsFromReputation(reputation) {
 }
 
 function syncLevelsFromReputation(player) {
+  if (player?.rightsRiskLock) {
+    player.stats.rightsLevel = player.rightsRiskLock.rightsLevel || player.stats.rightsLevel;
+    player.stats.riskLevel = player.rightsRiskLock.riskLevel || player.stats.riskLevel;
+    return;
+  }
+
   const levels = deriveLevelsFromReputation(player.stats.reputation);
   player.stats.rightsLevel = levels.rightsLevel;
   player.stats.riskLevel = levels.riskLevel;
@@ -233,10 +246,10 @@ export function calcInitialSurvivalProgress(stats) {
 }
 
 export function calculateEffectiveDelta(player, baseDelta = {}) {
-  const stats = {
-    ...player.stats,
-    ...deriveLevelsFromReputation(player.stats?.reputation),
-  };
+  const derived = deriveLevelsFromReputation(player.stats?.reputation);
+  const stats = player?.rightsRiskLock
+    ? { ...player.stats, rightsLevel: player.rightsRiskLock.rightsLevel, riskLevel: player.rightsRiskLock.riskLevel }
+    : { ...derived, ...player.stats };
   const effective = {
     health: calcEffectiveStatDelta(baseDelta.health || 0, stats),
     reputation: calcEffectiveStatDelta(baseDelta.reputation || 0, stats),

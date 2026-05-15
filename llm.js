@@ -4,9 +4,15 @@ import {
   buildCultureLibraryPrompt,
   buildCultureSquarePrompt,
   buildCourtPrompt,
+  buildCourtResultPrompt,
+  buildOpportunityPrompt,
+  buildPersonalFailureEndingPrompt,
+  buildPersonalSuccessEndingPrompt,
   buildRelationshipPrompt,
   buildRoundEvaluationPrompt,
   buildScenePrompt,
+  buildSocialFailureEndingPrompt,
+  buildSocialSuccessEndingPrompt,
 } from "./prompts.js";
 
 function extractJson(text) {
@@ -834,6 +840,74 @@ function mockEvent({ scene, subScene, player, gameState }) {
   };
 }
 
+function mockOpportunityEvent({ player }) {
+  const legendary = randomFrom([
+    {
+      title: "旧彩票的号码",
+      setup: "你在整理抽屉时翻出一张差点被丢掉的彩票，号码和当天公布结果只隔着一次确认。",
+      success: "彩票命中了足以缓解多年压力的奖金，你先还清紧急债务，又给自己留出一段重新选择职业的时间。",
+      failure: "彩票没有中奖，你为核验与折返花掉了半天，情绪短暂下坠，但损耗仍在可承受范围内。",
+    },
+    {
+      title: "失联亲人的名片",
+      setup: "一位多年未见的亲人突然联系你，原来对方正在寻找可信任的人接手一个小项目。",
+      success: "项目意外适合你的经验，你获得一笔稳定合作款，也结识了能继续介绍资源的贵人。",
+      failure: "项目临时取消，你白跑几趟还垫付了交通费用，只能把它当成一次虚惊后的练习。",
+    },
+    {
+      title: "巡游道士的转运符",
+      setup: "夜市里，一个四处云游的道士听完你的近况，留下一个半真半假的转运建议。",
+      success: "你照着建议换了行动节奏，竟避开了一次重大损耗，还误打误撞遇到愿意提携你的人。",
+      failure: "所谓转运没有立刻灵验，你为这点希望付出小成本，也提醒自己不能全靠运气。",
+    },
+  ]);
+
+  return {
+    eventId: `opp_${Date.now()}`,
+    thread: {
+      threadId: `thr_opp_${Math.floor(Math.random() * 8)}`,
+      status: "closed",
+      summary: `${legendary.title}带来一次小概率转折`,
+    },
+    title: legendary.title,
+    narrative: `${player.name}${legendary.setup}你可以确认尝试，让命运掷出一次硬币；也可以取消离开，只损失这次行动投入。`,
+    options: [
+      {
+        id: "success",
+        label: "确认尝试：机遇成真",
+        description: legendary.success,
+        summary: `${player.name}抓住“${legendary.title}”带来的小概率机遇，获得翻盘资源。`,
+        thread: { status: "closed", summary: "机遇成功兑现，局面被重新打开。" },
+        effects: {
+          self: {
+            health: Math.round(14 + Math.random() * 10),
+            reputation: Math.round(10 + Math.random() * 12),
+            wealth: roundTo1(10 + Math.random() * 25),
+          },
+          global: { socialGap: -Math.round(1 + Math.random() * 3), maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
+          meta: { survivalProgress: 12, equalityProgress: 3, major: true, tag: "🎲" },
+        },
+      },
+      {
+        id: "failure",
+        label: "确认尝试：机遇落空",
+        description: legendary.failure,
+        summary: `${player.name}尝试“${legendary.title}”，但机遇没有兑现，只留下轻微损耗。`,
+        thread: { status: "closed", summary: "机遇未能兑现，玩家带着损耗离开。" },
+        effects: {
+          self: {
+            health: -Math.round(2 + Math.random() * 5),
+            reputation: -Math.round(1 + Math.random() * 4),
+            wealth: -roundTo1(0.5 + Math.random() * 3),
+          },
+          global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
+          meta: { survivalProgress: -3, equalityProgress: 0, major: false, tag: "🎲" },
+        },
+      },
+    ],
+  };
+}
+
 export async function generateSceneEvent(params, apiKey) {
   const { scene, subScene, player, gameState, historySummary } = params;
 
@@ -898,6 +972,22 @@ export async function generateSceneEvent(params, apiKey) {
   }
 }
 
+export async function generateOpportunityEvent(params, apiKey) {
+  const { player, gameState, historySummary } = params;
+
+  if (!apiKey) {
+    return mockOpportunityEvent({ player, gameState });
+  }
+
+  const prompt = buildOpportunityPrompt({ player, gameState, historySummary });
+  try {
+    return await callServerLlm(prompt);
+  } catch (error) {
+    console.warn("机遇场模型调用失败，自动回退到Mock事件:", error);
+    return mockOpportunityEvent({ player, gameState });
+  }
+}
+
 export async function generateCourtEvent(params, apiKey) {
   const { gameState, historySummary, player } = params;
 
@@ -911,6 +1001,53 @@ export async function generateCourtEvent(params, apiKey) {
   } catch (error) {
     console.warn("法庭模型调用失败，自动回退到Mock事件:", error);
     return mockEvent({ scene: "court", player, gameState });
+  }
+}
+
+function normalizeCourtVerdict(raw, fallback) {
+  const verdictText = String(raw?.verdictText || raw?.endingText || raw?.text || "").trim();
+  const summary = String(raw?.summary || "").trim();
+  return {
+    title: String(raw?.title || "结果宣判").slice(0, 40),
+    verdictText: (verdictText || fallback.verdictText).slice(0, 900),
+    summary: (summary || fallback.summary).slice(0, 240),
+  };
+}
+
+function mockCourtVerdict({ eventData, votesText, winnerLabel, winnerSummary, resultText, impactText }) {
+  const billName = eventData?.billName || eventData?.title || "本项法案";
+  const passed = winnerLabel === "支持";
+  const rejected = winnerLabel === "反对";
+  const suspended = winnerLabel === "弃权" || winnerLabel === "无多数";
+  const execution = passed
+    ? `法庭决定推动${billName}试点执行。第一个被纳入试点的城市要求用人单位公开照护假落实率，并把违规记录纳入年度劳动监察。几个月后，一家曾以“岗位不便”为由拒绝员工照护假的企业被约谈，相关部门要求其补发福利并调整招聘话术。`
+    : rejected
+    ? `法庭最终没有采纳${billName}。反对方认为改革速度过快会带来用工震荡，于是相关部门只发布了倡议性文件。短期内争议降温，但企业仍能用“岗位适配”包装隐性筛选，家庭照护压力继续被私人化。`
+    : `${billName}在弃权声中被搁置。大量旁观者认为提案“方向不错但太麻烦”，导致执行部门缺少明确授权。公共讨论一度热闹，却没有形成足够稳定的制度压力。`;
+  const summary = passed
+    ? `总结：${billName}获得执行空间，权利差值因此被实质压缩，但推行成本仍需要社会共同承担。`
+    : suspended
+    ? `总结：${billName}因公共意志不足被悬置，不平等没有爆发式恶化，却继续留在日常规则里。`
+    : `总结：${billName}未能落地，短期秩序被保住，但原有权利失衡被继续延后处理。`;
+  return {
+    title: "结果宣判",
+    verdictText: `${execution}\n\n投票结构显示：${votesText}。${resultText} ${impactText} ${winnerSummary || ""}\n\n${summary}`,
+    summary,
+  };
+}
+
+export async function generateCourtResult(params, apiKey) {
+  const fallback = mockCourtVerdict(params);
+  if (!apiKey) {
+    return fallback;
+  }
+
+  try {
+    const prompt = buildCourtResultPrompt(params);
+    return normalizeCourtVerdict(await callServerLlm(prompt), fallback);
+  } catch (error) {
+    console.warn("法庭结果宣判生成失败，自动回退到Mock:", error);
+    return fallback;
   }
 }
 
@@ -943,6 +1080,98 @@ export async function evaluateRoundRights(params, apiKey) {
   } catch (error) {
     console.warn("回合评估调用失败，自动回退到Mock评估:", error);
     return mockRoundEvaluation();
+  }
+}
+
+function normalizeEndingText(raw, fallback) {
+  const text = String(raw?.endingText || raw?.text || raw?.summary || "").trim();
+  return {
+    endingText: text ? text.slice(0, 900) : fallback,
+  };
+}
+
+function mockPersonalEnding({ player, initialPlayer, succeeded, historyText, earlyDeath = false }) {
+  const initialHealth = Number(initialPlayer?.stats?.health ?? player.stats.health);
+  const initialWealth = Number(initialPlayer?.stats?.wealth ?? player.stats.wealth);
+  const healthChange = Math.round(Number(player.stats.health || 0) - initialHealth);
+  const wealthChange = Math.round(Number(player.stats.wealth || 0) - initialWealth);
+  const historyHint = String(historyText || "")
+    .split(/\n/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("；");
+
+  if (succeeded) {
+    return {
+      endingText: `${player.name}把这段旅程走到了最后。回望起点，${player.job}的身份并没有替TA挡住现实压力，但那些关于职场、家庭和公共表达的选择，逐渐把TA从被动应付推向了更清醒的位置。${historyHint || "几次关键选择"}成为TA后来反复提起的节点：有些决定换来了健康和财富的回升，有些决定只是让TA知道自己不必独自承担。到终局时，TA的身心健康变化${healthChange >= 0 ? "转为正向" : "仍留下损耗"}，财富变化${wealthChange >= 0 ? "带来更大余地" : "提醒资源仍然紧张"}。这不是圆满无缺的人生，但TA保住了继续选择的能力，也把“活下去”推进成了“更像自己地生活”。`,
+    };
+  }
+
+  return {
+    endingText: `${player.name}${earlyDeath ? "提前死亡，没能撑到最后" : "没能撑到最后"}。TA的退场并不是某一个数字突然归零，而是许多压力累积后的结果：工作中的让步、关系里的消耗、公共议题中的摇摆，都在一点点压缩TA可行动的空间。${historyHint || "那些看似普通的选择"}后来被重新翻看时，像一串没有被及时接住的信号。TA曾试图靠忍耐换取稳定，也曾在关键时刻用力争取，但资源、声誉和身心状态并没有形成足够稳固的支撑。结局停在这里，并不意味着TA的努力没有意义；它只是提醒这局游戏里的生存从来不是单人的意志竞赛，而是个人策略与社会结构不断拉扯后的结果。`,
+  };
+}
+
+function mockSocialEnding({ gameState, initialSnapshot, succeeded, historyText }) {
+  const startGap = Number(initialSnapshot?.socialGap ?? Math.abs((initialSnapshot?.maleRights ?? 50) - (initialSnapshot?.femaleRights ?? 45)));
+  const endGap = Number(gameState.socialGap ?? Math.abs((gameState.maleRights || 0) - (gameState.femaleRights || 0)));
+  const aliveCount = gameState.players.filter((p) => p.alive).length;
+  const examples = gameState.players
+    .slice(0, 3)
+    .map((p) => `${p.name}在${p.job}与私人生活之间留下了可被讨论的案例`)
+    .join("，");
+  const historyHint = String(historyText || "")
+    .split(/\n/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join("；");
+
+  if (succeeded) {
+    return {
+      endingText: `这局结束时，社会权利差值从${Math.round(startGap)}收束到${Math.round(endGap)}，仍有${aliveCount}名玩家站在终点。变化不是一夜之间发生的：${examples}。这些个人选择进入公共记忆后，职场中的默认歧视开始被更多人追问，家庭责任不再只被视作某一方的天然义务，求助与互助也逐渐从“丢脸”变成一种可以被正当讨论的社会支持。${historyHint || "法庭、广场与日常选择共同推动了结构松动"}。这个结局并不宣称公平已经完成，只说明本轮社会终于学会把一些被遮住的代价说出来，并愿意为更均衡的权利分配留下制度空间。`,
+    };
+  }
+
+  return {
+    endingText: `这局没有抵达真正的公平。表面上，许多事件都曾出现转机，但它们没有连成稳定的公共改变：有人在争取时过于急切，使议题被旁观者转移成“态度问题”；有人一次次退让，让不公平以更温和的形式回到日常；也有人试图互助，却没能抵消资源与声誉的持续损耗。${historyHint || "经历手账中反复出现的冲突"}说明，失败并不只来自某个角色的离场，而来自表达方式、制度惯性和互助网络之间的断裂。终局时，社会权利差值停在${Math.round(endGap)}，存活人数为${aliveCount}。不公平并未彻底压倒所有人，但它仍然足够坚硬，使本轮世界没能把个人挣扎转化为可靠的共同秩序。`,
+  };
+}
+
+export async function generatePersonalEnding(params, apiKey) {
+  const { player, succeeded } = params;
+  const fallback = mockPersonalEnding(params).endingText;
+
+  if (!apiKey) {
+    return { endingText: fallback };
+  }
+
+  const prompt = succeeded
+    ? buildPersonalSuccessEndingPrompt(params)
+    : buildPersonalFailureEndingPrompt(params);
+
+  try {
+    return normalizeEndingText(await callServerLlm(prompt), fallback);
+  } catch (error) {
+    console.warn("个人结局生成失败，自动回退到Mock:", error);
+    return { endingText: fallback };
+  }
+}
+
+export async function generateSocialEnding(params, apiKey) {
+  const { succeeded } = params;
+  const fallback = mockSocialEnding(params).endingText;
+
+  if (!apiKey) {
+    return { endingText: fallback };
+  }
+
+  const prompt = succeeded ? buildSocialSuccessEndingPrompt(params) : buildSocialFailureEndingPrompt(params);
+
+  try {
+    return normalizeEndingText(await callServerLlm(prompt), fallback);
+  } catch (error) {
+    console.warn("社会结局生成失败，自动回退到Mock:", error);
+    return { endingText: fallback };
   }
 }
 
