@@ -13,17 +13,15 @@ export function buildCharacterCohortPrompt() {
 8) roles数组必须正好4个对象，slot为1、2、3、4。
 
 
-输出JSON格式:
+输出JSON格式，大部分以自然语言描述即可:
 {
   "cohort": {
-    "circleName": "二三线城市普通工薪圈",
-    "cityTier": "二线",
-    "classLevel": "普通工薪",
-    "educationLevel": "大专到普通本科",
-    "incomeLevel": "月收入5000-10000元",
-    "lifestyle": "租房/通勤/社交媒体消费并存",
-    "commonPressures": "房租、婚恋、职业上升受限、原生家庭期待",
-    "cohortNote": "四人像会在同一城市、同一朋友圈或平台上相遇的人。"
+    "cityTier": "可能的城市层级",
+    "classLevel": "选择一个社会圈层",
+    "educationLevel": "合理的受教育阶段",
+    "incomeLevel": "收入范围",
+    "lifestyle": "共同的生活方式",
+    "commonPressures": "相同的压力",
   },
   "roles": [
     {
@@ -72,7 +70,7 @@ ${rosterText}
 
 
 字段要求:
-- bio: 70-80字，整合家庭、成长、当前生活、内在矛盾，不要空泛标签。
+- bio: 70-90字，整合家庭、成长、当前生活、内在矛盾，不要空泛标签。
 - familyRelation: 1句，描述原生家庭或代际压力。
 - keyEvents: 2-3条过去经历，每条短句，可成为后续事件钩子。
 - values.familyMarriage: traditional|autonomous|mixed
@@ -109,9 +107,9 @@ ${rosterText}
     "conflictHooks": ["", ""],
     "survivalTask": "",
     "stats": {
-      "health": 0,
-      "reputation": 0,
-      "wealth": 0
+      "health": int,
+      "reputation": int,
+      "wealth": int
     }
   }
 }`;

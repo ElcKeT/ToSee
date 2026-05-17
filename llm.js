@@ -33,11 +33,11 @@ let llmReqSeq = 0;
 
 const PRESET_MANIFEST_PATH = "knowledge_base/manifest.ndjson";
 const PRESET_MIX_CONFIG = {
-  baseProbability: 0.35,
-  minProbability: 0.15,
-  maxProbability: 0.75,
-  lowConflictWeight: 0.25,
-  stagnationWeight: 0.2,
+  baseProbability: 0.18,
+  minProbability: 0.06,
+  maxProbability: 0.33,
+  lowConflictWeight: 0.08,
+  stagnationWeight: 0.07,
   repetitionPenalty: 0.22,
 };
 
@@ -124,6 +124,24 @@ function roundTo1(v) {
 
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function trimBio(text, max = 120) {
+  const value = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (value.length <= max) return value;
+
+  const clipped = value.slice(0, max);
+  const sentenceEnd = ["。", "！", "？", ".", "!", "?"].reduce((best, mark) => {
+    const idx = clipped.lastIndexOf(mark);
+    return idx > best ? idx : best;
+  }, -1);
+
+  if (sentenceEnd >= 0) {
+    return clipped.slice(0, sentenceEnd + 1).trim();
+  }
+  return clipped.trim();
 }
 
 function parseNdjson(text) {
@@ -518,9 +536,8 @@ function buildMockCharacter(gender, ageBase, idx) {
     job,
     cityTier,
     classLevel,
-    bio: `${gender === "male" ? "男性" : "女性"}，${age}岁${job}，在${cityTier}城市承受家庭与职业双重压力，立场并不稳定。`.slice(
-      0,
-      80
+    bio: trimBio(
+      `${gender === "male" ? "男性" : "女性"}，${age}岁${job}，在${cityTier}城市承受家庭与职业双重压力，立场并不稳定。`
     ),
     familyRelation: "与父母在婚恋与生育观上有持续拉扯，代际沟通紧张。",
     keyEvents: ["曾因性别刻板印象错失机会", "在亲密关系里经历过权责失衡"],
@@ -644,7 +661,7 @@ function normalizeInitResult(raw) {
       job: String(p?.job || "职场人").slice(0, 20),
       cityTier: String(p?.cityTier || "二线").slice(0, 10),
       classLevel: String(p?.classLevel || "工薪").slice(0, 12),
-      bio: String(p?.bio || "角色背景待补充").slice(0, 80),
+      bio: trimBio(p?.bio || "角色背景待补充"),
       familyRelation: String(p?.familyRelation || "代际关系中等紧张").slice(0, 70),
       keyEvents: Array.isArray(p?.keyEvents) ? p.keyEvents.slice(0, 3) : ["曾经历角色冲突"],
       values: {
@@ -753,7 +770,7 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
     job: String(p?.job || fallback.job || "职场人").slice(0, 20),
     cityTier: String(p?.cityTier || fallback.cityTier || "二线").slice(0, 10),
     classLevel: String(p?.classLevel || fallback.classLevel || "工薪").slice(0, 12),
-    bio: String(p?.bio || p?.profile || fallback.bio || "角色背景待补充").slice(0, 80),
+    bio: trimBio(p?.bio || p?.profile || fallback.bio || "角色背景待补充"),
     familyRelation: String(p?.familyRelation || p?.familyBackground || fallback.familyRelation || "代际关系中等紧张").slice(
       0,
       70
@@ -801,9 +818,11 @@ function buildMockPlayerFromSeed({ seed, cohort, slot = 1 }) {
     job: seed?.job || base.job,
     cityTier: cohort?.cityTier || base.cityTier,
     classLevel: cohort?.classLevel || base.classLevel,
-    bio: `${expectedGender === "male" ? "男性" : "女性"}，${seed?.age || base.age}岁${seed?.job || base.job}，${
-      seed?.familyBackground || "普通家庭出身"
-    }。${seed?.valuesTension || "想稳定又不甘心被固定。"}${seed?.currentLife || ""}`.slice(0, 80),
+    bio: trimBio(
+      `${expectedGender === "male" ? "男性" : "女性"}，${seed?.age || base.age}岁${seed?.job || base.job}，${
+        seed?.familyBackground || "普通家庭出身"
+      }。${seed?.valuesTension || "想稳定又不甘心被固定。"}${seed?.currentLife || ""}`
+    ),
     familyRelation: String(seed?.familyBackground || base.familyRelation).slice(0, 70),
     keyEvents: [seed?.growthSketch || "成长中经历过资源限制", seed?.socialFactors || "现实压力与代际期待交织"].filter(Boolean),
     values: {
@@ -1438,4 +1457,4 @@ export async function generateInitialCharacters(apiKey) {
   }
 }
 
-export const utils = { clamp };
+export const utils = { clamp, trimBio };

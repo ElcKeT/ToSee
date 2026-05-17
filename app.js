@@ -74,6 +74,8 @@ const LOCAL_PLAYER_ID = "p1";
 const STARTING_ACTION_POINTS = 30;
 const OPPORTUNITY_UNLOCK_ROUND = 6;
 const OPPORTUNITY_ACTION_COST = 2;
+const OPPORTUNITY_MAX_ATTEMPTS = 2;
+const OPPORTUNITY_RETRY_DELAY_ROUNDS = 5;
 const MAX_ITEM_COUNT = 2;
 const SUPPORT_CARD_MAX_USES = 3;
 const FORTUNE_CARD_MAX_USES = 2;
@@ -384,6 +386,14 @@ function addAsset(frame, src, x, y, w, h, z, className = "") {
   return img;
 }
 
+function addScreenMask(frame, x, y, w, h, z, className = "") {
+  const mask = document.createElement("div");
+  mask.className = `screen-mask ${className}`.trim();
+  setRect(mask, x, y, w, h, z);
+  frame.appendChild(mask);
+  return mask;
+}
+
 function addImageButton(frame, src, x, y, w, h, z, onClick, disabled = false) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -448,10 +458,13 @@ function renderStartLoadingScreen() {
   syncSession.screen = "generating";
   setGameVisible(false);
   const frame = createScreenFrame();
-  addAsset(frame, "./image_UI/动画遮罩.png", 0, 0, 1920, 1080, 1);
-  addAsset(frame, "./image_UI/动画背景.png", 828, 368, 264, 268, 2);
-  addScreenText(frame, "故事正在生成中...", 889, 636, 142, 26, 3, "white center");
-  addVideoAsset(frame, "./image_UI/加载动画.mp4", 854, 389, 212, 224, 4);
+  addAsset(frame, "./image_UI/背景1.png", 0, 0, 1920, 1080, 0);
+  addAsset(frame, "./image_UI/标题1.png", 589, 25, 734, 833, 1);
+  addAsset(frame, "./image_UI/按键1.png", 615, 890, 692, 122, 2);
+  addScreenMask(frame, 0, 0, 1920, 1080, 3, "start-loading-mask");
+  addAsset(frame, "./image_UI/动画背景.png", 828, 368, 264, 268, 4);
+  addScreenText(frame, "故事正在生成中...", 889, 636, 142, 26, 5, "white center");
+  addVideoAsset(frame, "./image_UI/加载动画.mp4", 854, 389, 212, 224, 6);
 }
 
 function statusLabel(status) {
@@ -681,10 +694,19 @@ function getInitialPlayerSnapshot(playerId) {
 }
 
 function canEnterOpportunity(player) {
+  const hasAttemptCounter = Number.isFinite(Number(player?.opportunityAttempts));
+  const attempts = hasAttemptCounter
+    ? Number(player.opportunityAttempts)
+    : player?.opportunityUsed
+    ? OPPORTUNITY_MAX_ATTEMPTS
+    : 0;
+  const lastAttemptRound = Number(player?.opportunityLastAttemptRound || 0);
   return (
     Boolean(player?.alive) &&
     state.round >= OPPORTUNITY_UNLOCK_ROUND &&
-    !player.opportunityUsed &&
+    !player.opportunitySuccess &&
+    attempts < OPPORTUNITY_MAX_ATTEMPTS &&
+    (attempts === 0 || state.round >= lastAttemptRound + OPPORTUNITY_RETRY_DELAY_ROUNDS) &&
     ensureActionPoints(player) >= OPPORTUNITY_ACTION_COST
   );
 }
@@ -1380,13 +1402,31 @@ function eventPopupContentLayout({ compactOptionsBottom = false } = {}) {
   const bottom = 762;
   const height = bottom - top;
   const popupHeight = 638;
-  const optionsBottom = compactOptionsBottom ? bottom - Math.round(popupHeight * 0.1) : bottom;
+
+  const expand = compactOptionsBottom ? Math.round(popupHeight * 0.05) : 0; // 32
+
+  const optionsBottom = compactOptionsBottom
+    ? Math.min(bottom, bottom - Math.round(popupHeight * 0.1) + expand) // 730
+    : bottom;
+
   const minOptionsHeight = compactOptionsBottom ? 96 : 0;
-  const gap = compactOptionsBottom ? Math.round(popupHeight * 0.15) : Math.round(height * 0.2);
-  const storyHeight = compactOptionsBottom
-    ? Math.max(64, optionsBottom - top - gap - minOptionsHeight)
-    : Math.round(height * 0.4);
-  const optionsTop = top + storyHeight + gap;
+
+  const gap = compactOptionsBottom
+    ? Math.round(popupHeight * 0.075) // 48
+    : Math.round(height * 0.2);
+
+  let storyHeight;
+  if (compactOptionsBottom) {
+    // 选项高度：原 96 + 上下扩充 2*32 = 160
+    const optionsHeight = minOptionsHeight + 2 * expand; // 160
+    const optionsTop = optionsBottom - optionsHeight;   // 570
+    storyHeight = Math.max(64, optionsTop - top - gap); // 172
+  } else {
+    storyHeight = Math.round(height * 0.4);
+  }
+
+  const optionsTop = top + storyHeight + gap; // 紧凑模式下会等于 optionsBottom - optionsHeight
+
   return {
     x: 485,
     width: 978,
@@ -1583,7 +1623,10 @@ function confirmOpportunitySelection() {
   const option = pickOpportunityOutcome(overlay.eventData, didSucceed);
   if (!option) return;
 
-  player.opportunityUsed = true;
+  player.opportunityAttempts = Number(player.opportunityAttempts || 0) + 1;
+  player.opportunityLastAttemptRound = state.round;
+  player.opportunitySuccess = didSucceed;
+  player.opportunityUsed = didSucceed || player.opportunityAttempts >= OPPORTUNITY_MAX_ATTEMPTS;
   applyImmediateChoiceEffects(player, option.effects);
   writeEventRecord(player, overlay.eventData, option);
 
@@ -1598,7 +1641,9 @@ function confirmOpportunitySelection() {
         type: "notice",
         message: didSucceed
           ? "机遇成功，但背包已满，无法获得新的道具。"
-          : "机遇没有兑现，轻微损耗已结算。",
+          : player.opportunityAttempts < OPPORTUNITY_MAX_ATTEMPTS
+          ? `机遇没有兑现，轻微损耗已结算。${OPPORTUNITY_RETRY_DELAY_ROUNDS}回合后可再次尝试。`
+          : "机遇没有兑现，轻微损耗已结算，本局机遇尝试次数已用完。",
       };
   consumeLocalAction(OPPORTUNITY_ACTION_COST, { forceReady: true });
 }
@@ -1607,7 +1652,7 @@ function cancelOpportunitySelection() {
   const overlay = syncSession.overlay;
   const player = getLocalPlayer();
   if (overlay?.type === "opportunity") {
-    const summary = `${player.name}取消进入人生机遇场，消耗了行动投入，但保留本局唯一的机遇尝试机会。`;
+    const summary = `${player.name}取消进入人生机遇场，消耗了行动投入，但保留机遇判定次数。`;
     addFeed({ player, tag: "取消", summary });
     logChoice(player, "opportunity", "取消", summary);
   }

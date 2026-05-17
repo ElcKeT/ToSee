@@ -22,7 +22,7 @@ function makeBio(name, gender, job) {
     `${name}长期照顾家庭与工作双重压力，职业是${job}，希望在不撕裂关系的前提下争取平等。`,
   ];
   const txt = pickOne(templates);
-  return `${gender === "male" ? "男性" : "女性"}角色。${txt}`.slice(0, 80);
+  return utils.trimBio(`${gender === "male" ? "男性" : "女性"}角色。${txt}`);
 }
 
 export function createInitialState() {
@@ -114,7 +114,7 @@ function buildPlayerFromSeed(seed, idx) {
     job,
     cityTier: String(seed?.cityTier || "二线"),
     classLevel: String(seed?.classLevel || "工薪"),
-    bio: String(seed?.bio || makeBio(name, gender, job)).slice(0, 80),
+    bio: utils.trimBio(seed?.bio || makeBio(name, gender, job)),
     familyRelation: String(seed?.familyRelation || "家庭关系中等紧张，存在代际分歧。"),
     keyEvents: Array.isArray(seed?.keyEvents) ? seed.keyEvents.slice(0, 3) : [],
     values: seed?.values || {
@@ -134,6 +134,9 @@ function buildPlayerFromSeed(seed, idx) {
     fortuneSwapUseCount: 0,
     fortuneSwapTargeted: false,
     opportunityUsed: false,
+    opportunityAttempts: 0,
+    opportunitySuccess: false,
+    opportunityLastAttemptRound: 0,
     marriedTo: null,
     intimacy: 0,
     sharedWealthId: null,

@@ -87,11 +87,12 @@ app.post("/api/llm", async (req, res) => {
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
-        thinking: { type: "disabled" },
-        //reasoning_effort: "high",
+        thinking: { type: "enabled" },
+        //thinking: { type: "disabled" },
+        reasoning_effort: "high",
         stream: false,
         max_tokens: maxTokens,
-        temperature: 0.7,
+        temperature: 1.0,
       }),
       new Promise((_, reject) => {
         setTimeout(() => reject(new Error(`请求超时(${requestTimeoutMs}ms)`)), requestTimeoutMs);
