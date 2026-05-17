@@ -1,58 +1,103 @@
-export function buildCharacterInitPrompt({ targetGender, slot = 1, generatedPlayers = [] } = {}) {
-  const expectedGender = targetGender === "female" ? "female" : "male";
-  const slotProfiles = {
-    1: "1号玩家，真实玩家视角，需要有清晰的个人目标、现实压力和可持续事件钩子。",
-    2: "2号玩家，模拟真人玩家，需要与1号在职业、阶层、家庭关系或价值观上形成差异。",
-    3: "3号玩家，AI托管玩家，需要具备鲜明但不过度极端的选择倾向。",
-    4: "4号玩家，AI托管玩家，需要补足本局阵容差异，避免和其他座位同质化。",
-  };
-  const historyLines = generatedPlayers.length
-    ? generatedPlayers
-        .map(
-          (p, idx) =>
-            `${idx + 1}. ${p.name || "未命名"} | ${p.gender} | ${p.age}岁 | ${p.job} | ${p.classLevel} | stance=${p.stance}`
-        )
-        .join("\n")
-    : "(并行生成模式下可能为空；请依据座位设定主动差异化)";
+export function buildCharacterCohortPrompt() {
+  return `《看见》是一款大模型驱动的性别平等选择游戏，玩家将在普通人的生活、职场、家庭和公共议题中做出选择。
+当前任务是先为本局4人生成“同一生活世界”的基础设定。输出严格JSON。
 
-  return `《看见》是一款大模型驱动的性别平等选择游戏，玩家将在普通人的生活、职场、家庭和公共议题中做出选择，并观察个人生存与社会平等如何互相影响。
-当前任务是为本局4人游戏生成第${slot}号座位的初始角色。本次只生成1名角色，输出严格JSON。
+生成逻辑:
+1) 先确定四人共同所属的社会圈层，再在圈层内部制造个体差异，只生成基础设定。
+2) 四人必须属于相近社会阶层，保持接近的教育水平、收入水平、城市等级、消费能力、社会认知和生活方式。
+3) 不允许出现明显阶层跨度过大的组合，例如金融精英与农村贫困劳动者同组、海外高知家庭与底层留守家庭同组。
+4) 可选社会圈层包括：县城青年圈、二三线城市普通工薪圈、小城小康家庭圈、一线城市互联网白领圈、城市新中产圈、流动务工群体、下沉市场青年群体。
+5) 四人固定**2男2女**，年龄18-36岁，初始状态全部单身，禁止出现已婚/已有子女。
+6) 四人姓名不能重复，职业不能完全重复；必须有性格、性别处境、婚恋观、未来态度和内在矛盾差异。
+7) 角色要符合中国当代社会现实，避免悬浮、爽文感、偶像剧化和标签化。
+8) roles数组必须正好4个对象，slot为1、2、3、4。
+
+
+输出JSON格式:
+{
+  "cohort": {
+    "circleName": "二三线城市普通工薪圈",
+    "cityTier": "二线",
+    "classLevel": "普通工薪",
+    "educationLevel": "大专到普通本科",
+    "incomeLevel": "月收入5000-10000元",
+    "lifestyle": "租房/通勤/社交媒体消费并存",
+    "commonPressures": "房租、婚恋、职业上升受限、原生家庭期待",
+    "cohortNote": "四人像会在同一城市、同一朋友圈或平台上相遇的人。"
+  },
+  "roles": [
+    {
+      "slot": 1,
+      "name": "",
+      "gender": "male|female",
+      "age": 0,
+      "job": "",
+      "familyBackground": "家庭背景与原生家庭压力，1-2句",
+      "growthSketch": "成长经历，1-2句",
+      "currentLife": "当前生活状态，1-2句",
+      "personality": "性格特点，1句",
+      "valuesTension": "真实内在矛盾，1句",
+      "romanceView": "婚恋观，1句",
+      "futureAttitude": "对未来态度，1句",
+      "socialFactors": "城乡差异/教育资源/阶层流动/婚育压力/消费主义/互联网文化/代际冲突中最相关的因素，自然语言描述"
+    }
+  ]
+}`;
+}
+
+export function buildCharacterDetailPrompt({ cohort, seed, slot = 1, allSeeds = [] } = {}) {
+  const expectedGender = seed?.gender === "female" ? "female" : "male";
+  const seedText = JSON.stringify(seed || {}, null, 2);
+  const cohortText = JSON.stringify(cohort || {}, null, 2);
+  const rosterText = JSON.stringify(allSeeds || [], null, 2);
+
+  return `《看见》是一款大模型驱动的性别平等选择游戏。
+当前任务是根据第一阶段给出的基础设定，扩写第${slot}号角色为游戏可用的结构化角色。输出严格JSON。
+
+# 全局圈层设定
+${cohortText}
+
+# 本角色基础设定
+${seedText}
+
+# 四人基础名单(用于保持差异，避免重名与同质化)
+${rosterText}
 
 硬性约束:
-1) 本局总人数固定4人，最终必须2男2女
-2) 第${slot}号角色gender必须是: ${expectedGender}
-3) 年龄必须在20~35之间
-4) 初始状态全部为单身，禁止出现已婚/已有家庭(妻子/丈夫/儿子/女儿)
-5) 角色社会条件保持普通人尺度，不写极端悬殊或猎奇背景
-6) bio在80字左右
-7) survivalTask必须用10个字左右总结该角色的主要生存目标/面临的主要矛盾
+1) 只生成第${slot}号角色。
+2) name、gender、age、job必须继承“本角色基础设定”，不得改名、改性别、改年龄或改职业。
+3) gender必须是${expectedGender}。
+4) 初始状态单身，禁止写已婚、配偶、子女。
+5) 角色必须保持在全局圈层内，不要突然变成明显更高或更低阶层。
 
-座位设定:
-${slotProfiles[slot] || slotProfiles[1]}
 
-并行差异化参考:
-${historyLines}
-
-本轮重点:
-- 主动与其他座位在职业、阶层、家庭关系、价值观和冲突槽位上拉开差异
-- 写出可持续触发事件的欲望、压力和矛盾，不要只写标签
-- stats只包含 health、reputation、wealth，其数值要符合其bio
+字段要求:
+- bio: 70-80字，整合家庭、成长、当前生活、内在矛盾，不要空泛标签。
+- familyRelation: 1句，描述原生家庭或代际压力。
+- keyEvents: 2-3条过去经历，每条短句，可成为后续事件钩子。
+- values.familyMarriage: traditional|autonomous|mixed
+- values.fairness: result|opportunity|freedom
+- values.reform: radical|moderate|skeptical
+- desireAndPressure: 1句，写欲望与现实压力的拉扯。
+- conflictHooks: 2-3条可持续触发事件的冲突钩子。
+- survivalTask: 10-18字，概括主要生存目标/核心矛盾。
+- stats只包含health、reputation、wealth；数值要符合角色处境。
 
 数值约束:
 - health: 10~100
 - reputation: -100~100
 - wealth(万元): -30~150
 
-输出JSON格式(只输出1个角色):
+输出JSON格式:
 {
   "player": {
-    "name": "",
-    "gender": "male|female",
-    "age": 0,
-    "job": "",
-    "cityTier": "",
-    "classLevel": "",
-    "bio": "80字左右",
+    "name": "${seed?.name || ""}",
+    "gender": "${expectedGender}",
+    "age": ${Number(seed?.age || 28)},
+    "job": "${seed?.job || ""}",
+    "cityTier": "${cohort?.cityTier || ""}",
+    "classLevel": "${cohort?.classLevel || ""}",
+    "bio": "",
     "familyRelation": "",
     "keyEvents": ["", ""],
     "values": {
@@ -60,16 +105,13 @@ ${historyLines}
       "fairness": "result|opportunity|freedom",
       "reform": "radical|moderate|skeptical"
     },
-    "socialRole": "",
-    "powerFeeling": "dominant|passive|balanced|imbalanced",
     "desireAndPressure": "",
-    "conflictHooks": [""],
-    "stance": "left|center|right",
+    "conflictHooks": ["", ""],
     "survivalTask": "",
     "stats": {
-      "health": int,
-      "reputation": int,
-      "wealth": int
+      "health": 0,
+      "reputation": 0,
+      "wealth": 0
     }
   }
 }`;

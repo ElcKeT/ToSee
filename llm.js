@@ -1,5 +1,6 @@
 import {
-  buildCharacterInitPrompt,
+  buildCharacterCohortPrompt,
+  buildCharacterDetailPrompt,
   buildCultureCounselingPrompt,
   buildCultureLibraryPrompt,
   buildCultureSquarePrompt,
@@ -497,7 +498,7 @@ function calcInitialSurvivalProgress(stats) {
 
 function buildMockCharacter(gender, ageBase, idx) {
   const name = randomFrom(MOCK_NAMES[gender]);
-  const age = clamp(ageBase + Math.floor(Math.random() * 10) - 4, 22, 39);
+  const age = clamp(ageBase + Math.floor(Math.random() * 10) - 4, 18, 36);
   const job = randomFrom(MOCK_JOBS);
   const cityTier = randomFrom(["一线", "新一线", "二线"]);
   const classLevel = randomFrom(["工薪", "中产边缘", "普通中产"]);
@@ -513,7 +514,6 @@ function buildMockCharacter(gender, ageBase, idx) {
   return {
     name: `${name}${idx > 2 ? "" : ""}`,
     gender,
-    genderIdentity: gender === "male" ? "顺性别男性" : "顺性别女性",
     age,
     job,
     cityTier,
@@ -529,11 +529,8 @@ function buildMockCharacter(gender, ageBase, idx) {
       fairness: valuesFairness,
       reform: valuesReform,
     },
-    socialRole: randomFrom(["职场人/子女", "伴侣候选/职场人", "公民/家庭照料者"]),
-    powerFeeling: randomFrom(["dominant", "passive", "balanced", "imbalanced"]),
     desireAndPressure: "希望兼顾体面收入与关系稳定，但现实资源不足导致反复妥协。",
     conflictHooks: ["关键节点：是否为晋升放弃照料责任"],
-    stance: randomFrom(["left", "center", "right"]),
     survivalTask:
       gender === "female"
         ? "争取职业成长并避免被家庭角色固定化"
@@ -544,14 +541,88 @@ function buildMockCharacter(gender, ageBase, idx) {
 }
 
 function mockInitialCharacters() {
-  const ageBase = 27 + Math.floor(Math.random() * 6);
-  const players = [
-    buildMockCharacter("male", ageBase, 0),
-    buildMockCharacter("male", ageBase, 1),
-    buildMockCharacter("female", ageBase, 2),
-    buildMockCharacter("female", ageBase, 3),
-  ];
+  const cohortResult = mockCharacterCohort();
+  const players = cohortResult.roles.map((seed, idx) =>
+    normalizeSingleInitPlayer(
+      buildMockPlayerFromSeed({ seed, cohort: cohortResult.cohort, slot: idx + 1 }),
+      idx,
+      seed.gender
+    )
+  );
   return { players };
+}
+
+function mockCharacterCohort() {
+  const templates = [
+    {
+      cohort: {
+        circleName: "二三线城市普通工薪圈",
+        cityTier: "二线",
+        classLevel: "普通工薪",
+        educationLevel: "大专到普通本科",
+        incomeLevel: "月收入5000-10000元",
+        lifestyle: "通勤、租房、短视频消费和熟人社交交织",
+        commonPressures: "房租、晋升慢、婚恋催促、原生家庭期待",
+        cohortNote: "四人像在同一座省会城市生活、会因工作和朋友介绍相遇的人。",
+      },
+      jobs: ["行政专员", "运营助理", "培训机构课程顾问", "社区网格员"],
+    },
+    {
+      cohort: {
+        circleName: "县城青年圈",
+        cityTier: "县城",
+        classLevel: "小城普通家庭",
+        educationLevel: "中专到普通本科",
+        incomeLevel: "月收入3500-7500元",
+        lifestyle: "熟人社会、家庭绑定、短途通勤和县城消费",
+        commonPressures: "编制想象、买房结婚、父母期待、工作机会有限",
+        cohortNote: "四人都处在县城熟人网络里，彼此生活半径接近。",
+      },
+      jobs: ["县医院护士", "汽车销售", "小学代课教师", "电商客服"],
+    },
+    {
+      cohort: {
+        circleName: "一线城市互联网白领圈",
+        cityTier: "一线",
+        classLevel: "城市白领",
+        educationLevel: "普通本科为主",
+        incomeLevel: "月收入9000-18000元",
+        lifestyle: "合租、加班、外卖、社交平台和消费分期并存",
+        commonPressures: "绩效竞争、房租、职业瓶颈、亲密关系不稳定",
+        cohortNote: "四人像在同一产业园或线上社群中互相认识的年轻白领。",
+      },
+      jobs: ["产品运营", "测试工程师", "视觉设计师", "客户成功专员"],
+    },
+  ];
+  const picked = randomFrom(templates);
+  const genders = ["male", "female", "male", "female"];
+  const ages = [24, 26, 29, 31].map((age) => clamp(age + Math.floor(Math.random() * 5) - 2, 18, 36));
+  const names = {
+    male: ["陈野", "赵明川", "吴泽", "郭一鸣", "梁辰"],
+    female: ["苏棠", "何雨晴", "孟知夏", "叶嘉宁", "秦晚"],
+  };
+  const usedNames = new Set();
+  const roles = genders.map((gender, idx) => {
+    const pool = names[gender].filter((name) => !usedNames.has(name));
+    const name = randomFrom(pool);
+    usedNames.add(name);
+    return {
+      slot: idx + 1,
+      name,
+      gender,
+      age: ages[idx],
+      job: picked.jobs[idx],
+      familyBackground: "普通家庭出身，父母对稳定工作和婚恋选择都有明确期待。",
+      growthSketch: "成长中经历过教育资源有限和自我证明压力。",
+      currentLife: "收入够维持日常，但对未来上升空间并不笃定。",
+      personality: idx % 2 === 0 ? "外表务实，内心容易焦虑。" : "看似温和，但对边界感很敏感。",
+      valuesTension: "相信努力有用，又担心努力抵不过结构限制。",
+      romanceView: idx % 2 === 0 ? "想要稳定关系，但害怕被责任绑定。" : "重视亲密关系，也不愿牺牲自我发展。",
+      futureAttitude: idx % 2 === 0 ? "希望三年内生活更稳。" : "想保留变化可能，不想太早定型。",
+      socialFactors: "阶层流动焦虑、婚育与工作压力、互联网消费文化、原生家庭影响交织。",
+    };
+  });
+  return { cohort: picked.cohort, roles };
 }
 
 function normalizeInitResult(raw) {
@@ -569,8 +640,7 @@ function normalizeInitResult(raw) {
     return {
       name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
       gender,
-      genderIdentity: String(p?.genderIdentity || (gender === "male" ? "顺性别男性" : "顺性别女性")).slice(0, 20),
-      age: clamp(Number(p?.age || 28), 20, 45),
+      age: clamp(Number(p?.age || 28), 18, 36),
       job: String(p?.job || "职场人").slice(0, 20),
       cityTier: String(p?.cityTier || "二线").slice(0, 10),
       classLevel: String(p?.classLevel || "工薪").slice(0, 12),
@@ -588,13 +658,8 @@ function normalizeInitResult(raw) {
           ? p.values.reform
           : "moderate",
       },
-      socialRole: String(p?.socialRole || "职场人/家庭成员").slice(0, 24),
-      powerFeeling: ["dominant", "passive", "balanced", "imbalanced"].includes(p?.powerFeeling)
-        ? p.powerFeeling
-        : "balanced",
       desireAndPressure: String(p?.desireAndPressure || "在现实压力和自我实现间挣扎").slice(0, 80),
       conflictHooks: Array.isArray(p?.conflictHooks) ? p.conflictHooks.slice(0, 3) : ["关键抉择冲突待触发"],
-      stance: ["left", "center", "right"].includes(p?.stance) ? p.stance : "center",
       survivalTask: String(p?.survivalTask || "在20回合内保持身心稳定并争取平等空间").slice(0, 60),
       stats,
       survivalProgress: calcInitialSurvivalProgress(stats),
@@ -615,6 +680,63 @@ function normalizeInitResult(raw) {
   return { players };
 }
 
+function normalizeCharacterCohort(raw) {
+  const fallback = mockCharacterCohort();
+  const source = raw && typeof raw === "object" ? raw : fallback;
+  const cohort = source.cohort && typeof source.cohort === "object" ? source.cohort : fallback.cohort;
+  const rows = Array.isArray(source.roles) ? source.roles.slice(0, 4) : [];
+  if (rows.length !== 4) return fallback;
+
+  const seenNames = new Set();
+  const roles = rows.map((role, idx) => {
+    const gender = role?.gender === "female" ? "female" : "male";
+    const fallbackRole = fallback.roles[idx] || {};
+    let name = String(role?.name || fallbackRole.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12);
+    if (seenNames.has(name)) {
+      name = `${name}${idx + 1}`.slice(0, 12);
+    }
+    seenNames.add(name);
+
+    return {
+      slot: idx + 1,
+      name,
+      gender,
+      age: clamp(Number(role?.age || fallbackRole.age || 28), 18, 36),
+      job: String(role?.job || fallbackRole.job || "职场人").slice(0, 20),
+      familyBackground: String(role?.familyBackground || fallbackRole.familyBackground || "普通家庭出身。").slice(0, 90),
+      growthSketch: String(role?.growthSketch || fallbackRole.growthSketch || "成长经历普通但有现实压力。").slice(0, 90),
+      currentLife: String(role?.currentLife || fallbackRole.currentLife || "当前生活稳定但存在压力。").slice(0, 90),
+      personality: String(role?.personality || fallbackRole.personality || "性格较为务实。").slice(0, 60),
+      valuesTension: String(role?.valuesTension || fallbackRole.valuesTension || "想稳定又不甘心被固定。").slice(0, 80),
+      romanceView: String(role?.romanceView || fallbackRole.romanceView || "对亲密关系保持谨慎期待。").slice(0, 70),
+      futureAttitude: String(role?.futureAttitude || fallbackRole.futureAttitude || "希望生活逐步变好。").slice(0, 70),
+      socialFactors: String(role?.socialFactors || fallbackRole.socialFactors || "阶层流动、婚育压力与代际观念冲突。").slice(0, 120),
+    };
+  });
+
+  const maleCount = roles.filter((x) => x.gender === "male").length;
+  const femaleCount = roles.filter((x) => x.gender === "female").length;
+  if (maleCount !== 2 || femaleCount !== 2) return fallback;
+  if (new Set(roles.map((x) => x.name)).size !== 4) return fallback;
+
+  return {
+    cohort: {
+      circleName: String(cohort.circleName || fallback.cohort.circleName || "普通青年圈").slice(0, 30),
+      cityTier: String(cohort.cityTier || fallback.cohort.cityTier || "二线").slice(0, 10),
+      classLevel: String(cohort.classLevel || fallback.cohort.classLevel || "普通工薪").slice(0, 12),
+      educationLevel: String(cohort.educationLevel || fallback.cohort.educationLevel || "普通本科").slice(0, 24),
+      incomeLevel: String(cohort.incomeLevel || fallback.cohort.incomeLevel || "中等收入").slice(0, 30),
+      lifestyle: String(cohort.lifestyle || fallback.cohort.lifestyle || "通勤与日常消费并存").slice(0, 80),
+      commonPressures: String(cohort.commonPressures || fallback.cohort.commonPressures || "工作、家庭和婚恋压力").slice(
+        0,
+        100
+      ),
+      cohortNote: String(cohort.cohortNote || fallback.cohort.cohortNote || "四人属于相近生活世界。").slice(0, 120),
+    },
+    roles,
+  };
+}
+
 function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
   const fallback = buildMockCharacter(expectedGender, 27, idx);
   const gender = expectedGender === "female" ? "female" : "male";
@@ -627,16 +749,15 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
   return {
     name: String(p?.name || `${gender === "male" ? "男" : "女"}角色${idx + 1}`).slice(0, 12),
     gender,
-    genderIdentity: String(p?.genderIdentity || (gender === "male" ? "顺性别男性" : "顺性别女性")).slice(
-      0,
-      20
-    ),
-    age: clamp(Number(p?.age || fallback.age || 28), 20, 35),
+    age: clamp(Number(p?.age || fallback.age || 28), 18, 36),
     job: String(p?.job || fallback.job || "职场人").slice(0, 20),
     cityTier: String(p?.cityTier || fallback.cityTier || "二线").slice(0, 10),
     classLevel: String(p?.classLevel || fallback.classLevel || "工薪").slice(0, 12),
-    bio: String(p?.bio || fallback.bio || "角色背景待补充").slice(0, 80),
-    familyRelation: String(p?.familyRelation || fallback.familyRelation || "代际关系中等紧张").slice(0, 70),
+    bio: String(p?.bio || p?.profile || fallback.bio || "角色背景待补充").slice(0, 80),
+    familyRelation: String(p?.familyRelation || p?.familyBackground || fallback.familyRelation || "代际关系中等紧张").slice(
+      0,
+      70
+    ),
     keyEvents: Array.isArray(p?.keyEvents) ? p.keyEvents.slice(0, 3) : fallback.keyEvents,
     values: {
       familyMarriage: ["traditional", "autonomous", "mixed"].includes(p?.values?.familyMarriage)
@@ -649,22 +770,53 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
         ? p.values.reform
         : fallback.values.reform,
     },
-    socialRole: String(p?.socialRole || fallback.socialRole || "职场人/家庭成员").slice(0, 24),
-    powerFeeling: ["dominant", "passive", "balanced", "imbalanced"].includes(p?.powerFeeling)
-      ? p.powerFeeling
-      : fallback.powerFeeling,
     desireAndPressure: String(p?.desireAndPressure || fallback.desireAndPressure || "在现实压力和自我实现间挣扎").slice(
       0,
       80
     ),
     conflictHooks: Array.isArray(p?.conflictHooks) ? p.conflictHooks.slice(0, 3) : fallback.conflictHooks,
-    stance: ["left", "center", "right"].includes(p?.stance) ? p.stance : fallback.stance,
     survivalTask: String(p?.survivalTask || fallback.survivalTask || "在20回合内保持身心稳定并争取平等空间").slice(
       0,
       60
     ),
     stats,
     survivalProgress: calcInitialSurvivalProgress(stats),
+  };
+}
+
+function buildMockPlayerFromSeed({ seed, cohort, slot = 1 }) {
+  const expectedGender = seed?.gender === "female" ? "female" : "male";
+  const idx = Math.max(0, Number(slot || seed?.slot || 1) - 1);
+  const base = buildMockCharacter(expectedGender, Number(seed?.age || 27), idx);
+  const valuesFamily = seed?.romanceView?.includes("自由")
+    ? "autonomous"
+    : seed?.romanceView?.includes("稳定")
+    ? "traditional"
+    : "mixed";
+  return {
+    ...base,
+    name: seed?.name || base.name,
+    gender: expectedGender,
+    age: Number(seed?.age || base.age),
+    job: seed?.job || base.job,
+    cityTier: cohort?.cityTier || base.cityTier,
+    classLevel: cohort?.classLevel || base.classLevel,
+    bio: `${expectedGender === "male" ? "男性" : "女性"}，${seed?.age || base.age}岁${seed?.job || base.job}，${
+      seed?.familyBackground || "普通家庭出身"
+    }。${seed?.valuesTension || "想稳定又不甘心被固定。"}${seed?.currentLife || ""}`.slice(0, 80),
+    familyRelation: String(seed?.familyBackground || base.familyRelation).slice(0, 70),
+    keyEvents: [seed?.growthSketch || "成长中经历过资源限制", seed?.socialFactors || "现实压力与代际期待交织"].filter(Boolean),
+    values: {
+      familyMarriage: valuesFamily,
+      fairness: "opportunity",
+      reform: "moderate",
+    },
+    desireAndPressure: String(seed?.valuesTension || seed?.futureAttitude || base.desireAndPressure).slice(0, 80),
+    conflictHooks: [
+      seed?.romanceView ? `婚恋观冲突：${seed.romanceView}` : "婚恋与现实条件的冲突",
+      seed?.futureAttitude ? `未来压力：${seed.futureAttitude}` : "职业上升与稳定生活的冲突",
+    ],
+    survivalTask: String(seed?.valuesTension || "在稳定与改变间维持生活").slice(0, 18),
   };
 }
 
@@ -1196,50 +1348,88 @@ export async function resolveRelationshipAction(params, apiKey) {
   }
 }
 
-export async function generateInitialCharacter({ slot = 1, targetGender = "male", generatedPlayers = [] } = {}, apiKey) {
-  const idx = Math.max(0, Number(slot || 1) - 1);
-  const expectedGender = targetGender === "female" ? "female" : "male";
+export async function generateCharacterCohort(apiKey) {
+  if (!apiKey) {
+    return mockCharacterCohort();
+  }
+
+  try {
+    return normalizeCharacterCohort(await callServerLlm(buildCharacterCohortPrompt()));
+  } catch (error) {
+    console.warn("角色基础设定生成失败，自动回退到Mock:", error);
+    return mockCharacterCohort();
+  }
+}
+
+export async function generateInitialCharacter({ slot = 1, seed = null, cohort = null, allSeeds = [] } = {}, apiKey) {
+  const idx = Math.max(0, Number(slot || seed?.slot || 1) - 1);
+  const expectedGender = seed?.gender === "female" ? "female" : "male";
+  const fallbackPlayer = buildMockPlayerFromSeed({ seed, cohort, slot: idx + 1 });
 
   if (!apiKey) {
     return {
-      player: normalizeSingleInitPlayer(null, idx, expectedGender),
+      player: normalizeSingleInitPlayer(fallbackPlayer, idx, expectedGender),
     };
   }
 
   try {
-    const prompt = buildCharacterInitPrompt({
-      targetGender: expectedGender,
+    const prompt = buildCharacterDetailPrompt({
+      cohort,
+      seed,
       slot: idx + 1,
-      generatedPlayers,
+      allSeeds,
     });
     const raw = await callServerLlm(prompt);
     const rawPlayer = raw?.player || (Array.isArray(raw?.players) ? raw.players[0] : raw);
     return {
-      player: normalizeSingleInitPlayer(rawPlayer, idx, expectedGender),
+      player: normalizeSingleInitPlayer(
+        {
+          ...fallbackPlayer,
+          ...rawPlayer,
+          name: seed?.name || rawPlayer?.name || fallbackPlayer.name,
+          gender: expectedGender,
+          age: seed?.age || rawPlayer?.age || fallbackPlayer.age,
+          job: seed?.job || rawPlayer?.job || fallbackPlayer.job,
+          cityTier: rawPlayer?.cityTier || cohort?.cityTier || fallbackPlayer.cityTier,
+          classLevel: rawPlayer?.classLevel || cohort?.classLevel || fallbackPlayer.classLevel,
+        },
+        idx,
+        expectedGender
+      ),
     };
   } catch (error) {
     console.warn(`第${idx + 1}个角色生成失败，自动回退到Mock:`, error);
     return {
-      player: normalizeSingleInitPlayer(null, idx, expectedGender),
+      player: normalizeSingleInitPlayer(fallbackPlayer, idx, expectedGender),
     };
   }
 }
 
 export async function generateInitialCharacters(apiKey) {
   try {
-    const targetGenders = ["male", "female", "male", "female"];
+    const cohortResult = await generateCharacterCohort(apiKey);
     const rows = await Promise.all(
-      targetGenders.map((targetGender, idx) =>
+      cohortResult.roles.map((seed, idx) =>
         generateInitialCharacter(
           {
             slot: idx + 1,
-            targetGender,
+            seed,
+            cohort: cohortResult.cohort,
+            allSeeds: cohortResult.roles,
           },
           apiKey
         )
       )
     );
-    const players = rows.map((row, idx) => row?.player || normalizeSingleInitPlayer(null, idx, targetGenders[idx]));
+    const players = rows.map(
+      (row, idx) =>
+        row?.player ||
+        normalizeSingleInitPlayer(
+          buildMockPlayerFromSeed({ seed: cohortResult.roles[idx], cohort: cohortResult.cohort, slot: idx + 1 }),
+          idx,
+          cohortResult.roles[idx]?.gender
+        )
+    );
 
     return normalizeInitResult({ players });
   } catch (error) {

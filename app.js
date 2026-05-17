@@ -1,4 +1,5 @@
 import {
+  generateCharacterCohort,
   evaluateRoundRights,
   generateInitialCharacter,
   generateCourtEvent,
@@ -95,7 +96,8 @@ let syncSession = createSyncSession();
 function createEmptyMatchSession() {
   return {
     batchId: 0,
-    targetGenders: [],
+    cohort: null,
+    roleSeeds: [],
     players: [null, null, null, null],
     statuses: ["idle", "idle", "idle", "idle"],
     errors: [null, null, null, null],
@@ -178,15 +180,6 @@ function tagForRelationshipAction(action) {
   if (action === "marriage") return "💍";
   if (action === "divorce") return "💔";
   return "🤝";
-}
-
-function shuffle(list) {
-  const copy = list.slice();
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
 }
 
 function genderLabel(gender) {
@@ -475,8 +468,8 @@ function playerStatusLine(index) {
 }
 
 function formatMatchBio(player) {
-  if (!player) return "人物小传：\n\n生成中...";
-  return `人物小传：\n\n${player.bio || "背景生成中..."}`;
+  if (!player) return "人物小传：\n生成中...";
+  return `人物小传：\n${player.bio || "背景生成中..."}`;
 }
 
 function formatMatchStats(player) {
@@ -522,9 +515,9 @@ function renderMatchScreen() {
   addScreenText(
     frame,
     `当前生存目标：${player?.survivalTask || "生成中..."}`,
-    790,
+    775,
     739,
-    390,
+    405,
     24,
     7,
     "match-survival center auto-height"
@@ -535,20 +528,41 @@ async function startParallelCharacterGeneration() {
   const batchId = matchSession.batchId + 1;
   matchSession = {
     batchId,
-    targetGenders: shuffle(["male", "male", "female", "female"]),
+    cohort: null,
+    roleSeeds: [],
     players: [null, null, null, null],
     statuses: ["generating", "generating", "generating", "generating"],
     errors: [null, null, null, null],
   };
   renderStartLoadingScreen();
 
-  matchSession.targetGenders.forEach((targetGender, idx) => {
+  const apiOn = runtimeStatus.mode === "online";
+
+  try {
+    const cohortResult = await generateCharacterCohort(apiOn);
+    if (matchSession.batchId !== batchId) return;
+
+    matchSession.cohort = cohortResult.cohort;
+    matchSession.roleSeeds = cohortResult.roles;
+    renderMatchScreen();
+  } catch (error) {
+    if (matchSession.batchId !== batchId) return;
+    console.warn("[match] cohort generation fallback failed", error);
+    matchSession.statuses = ["error", "error", "error", "error"];
+    matchSession.errors = [error, error, error, error];
+    renderMatchScreen();
+    return;
+  }
+
+  matchSession.roleSeeds.forEach((seed, idx) => {
     void generateInitialCharacter(
       {
         slot: idx + 1,
-        targetGender,
+        seed,
+        cohort: matchSession.cohort,
+        allSeeds: matchSession.roleSeeds,
       },
-      runtimeStatus.mode === "online"
+      apiOn
     )
       .then((result) => {
         if (matchSession.batchId !== batchId) return;
