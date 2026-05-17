@@ -77,6 +77,7 @@ const MAX_ITEM_COUNT = 2;
 const SUPPORT_CARD_MAX_USES = 3;
 const FORTUNE_CARD_MAX_USES = 2;
 const ITEM_TYPES = ["swap", "support"];
+const RIGHTS_EVALUATION_INTERVAL = 3;
 const EARLY_DEATH_SOCIAL_ENDING = "当生存本身已耗尽全部力气，\n人便很难再看见“未来”。";
 const UI_DEBUG_ENABLED =
   new URLSearchParams(window.location.search).has("debugUi") ||
@@ -108,7 +109,7 @@ function createSyncSession() {
     localPlayerId: LOCAL_PLAYER_ID,
     playerControllers: Object.fromEntries(PLAYER_ROLES.map((role) => [role.id, role.controller])),
     turnSubmissions: {},
-    pendingGlobalEffects: [],
+    pendingRightsEvaluationRows: [],
     pendingPvpActions: [],
     pvpRequests: [],
     pvpRequestSeq: 0,
@@ -159,6 +160,24 @@ function delay(ms) {
 
 function randomFrom(list) {
   return list[Math.floor(Math.random() * list.length)];
+}
+
+function tagForScene(scene, subScene = null) {
+  if (scene === "workplace") return "💼";
+  if (scene === "family") return "🏠";
+  if (scene === "opportunity") return "🎲";
+  if (scene === "court") return "⚖️";
+  if (scene === "culture" && subScene === "library") return "📚";
+  if (scene === "culture" && subScene === "counseling") return "🛋️";
+  if (scene === "culture") return "🗣️";
+  if (scene === "meditate") return "🧘";
+  return "📌";
+}
+
+function tagForRelationshipAction(action) {
+  if (action === "marriage") return "💍";
+  if (action === "divorce") return "💔";
+  return "🤝";
 }
 
 function shuffle(list) {
@@ -437,7 +456,7 @@ function renderStartLoadingScreen() {
   setGameVisible(false);
   const frame = createScreenFrame();
   addAsset(frame, "./image_UI/动画遮罩.png", 0, 0, 1920, 1080, 1);
-  addAsset(frame, "./image_UI/动画背景.png", 764, 334, 391, 364, 2);
+  addAsset(frame, "./image_UI/动画背景.png", 828, 368, 264, 268, 2);
   addScreenText(frame, "故事正在生成中...", 889, 636, 142, 26, 3, "white center");
   addVideoAsset(frame, "./image_UI/加载动画.mp4", 854, 389, 212, 224, 4);
 }
@@ -901,7 +920,15 @@ function relationLabel(player, target) {
 }
 
 function canRequestMarriage(initiator, target) {
-  return Boolean(initiator && target && initiator.gender !== target.gender);
+  return Boolean(
+    initiator &&
+      target &&
+      initiator.alive &&
+      target.alive &&
+      initiator.gender !== target.gender &&
+      !initiator.marriedTo &&
+      !target.marriedTo
+  );
 }
 
 function openPvpPanelMode(mode, target) {
@@ -1065,16 +1092,14 @@ function renderGameScreen() {
     frame,
     endingReady ? "./image_UI/解锁结局4.png" : "./image_UI/进入下一轮4.png",
     1318,
-    1028,
+    1040,
     162.5,
     32,
     4,
     endingReady ? unlockEndingFromGame : submitNextRoundFromGame,
     syncSession.roundPhase !== "acting" || (!endingReady && state.stage !== "ready")
   );
-  if (endingReady) {
-    addScreenText(frame, "解锁结局", 1328, 1032, 145, 24, 5, "mini center");
-  }
+  //if (endingReady) {addScreenText(frame, "解锁结局", 1328, 1032, 145, 24, 5, "mini center");}
 
   addRightsProgressBars(frame);
   addScreenText(frame, "女性社会权益值", 95, 51, 178, 40, 4, "center large");
@@ -1230,6 +1255,22 @@ function addScrollableScreenText(frame, text, x, y, w, h, z, className = "") {
   return box;
 }
 
+function fitScrollableTextBox(box, maxHeight, minHeight = 0) {
+  const naturalHeight = Math.ceil(box.scrollHeight || 0);
+  const resolvedHeight = Math.max(minHeight, Math.min(maxHeight, naturalHeight || minHeight));
+  const overflows = naturalHeight > maxHeight;
+  box.style.minHeight = minHeight ? `${minHeight}px` : "";
+  box.style.height = overflows ? `${maxHeight}px` : "auto";
+  box.style.overflowY = overflows ? "auto" : "hidden";
+
+  if (UI_DEBUG_ENABLED) {
+    const rect = getDebugRect(box);
+    updateDebugRect(box, rect.x, rect.y, rect.w, resolvedHeight, rect.z);
+  }
+
+  return resolvedHeight;
+}
+
 function renderPersonalEndingScreen() {
   syncSession.screen = "ending";
   syncSession.ending = syncSession.ending || {};
@@ -1303,7 +1344,7 @@ function renderPvpRequestOverlay(frame, overlay) {
     request.action === "support" ? "经济援助申请" : request.action === "divorce" ? "离婚申请" : "结婚申请";
   const question = request.action === "support" ? "是否帮助？" : "是否同意？";
   addAsset(frame, "./image_UI/背景模糊遮罩4-1.png", 5, 0, 1915, 1158, 20);
-  addAsset(frame, "./image_UI/背景框4-1.png", 685, 247, 550, 638, 21);
+  addAsset(frame, "./image_UI/背景框4-10.png", 598, 306, 729, 339, 21);
   addScreenText(
     frame,
     `${initiator?.name || "其他玩家"}向您发起${actionText}\n${question}`,
@@ -1314,26 +1355,33 @@ function renderPvpRequestOverlay(frame, overlay) {
     22,
     "center large auto-height"
   );
-  addScreenText(frame, "是", 820, 640, 80, 40, 22, "center large");
-  addHotspot(frame, 780, 620, 160, 80, 23, () => respondToPvpRequest(request.id, true));
-  addScreenText(frame, "否", 1020, 640, 80, 40, 22, "center large");
-  addHotspot(frame, 980, 620, 160, 80, 23, () => respondToPvpRequest(request.id, false));
+  addScreenText(frame, "是", 733, 529, 80, 40, 22, "center large");
+  addHotspot(frame, 700, 509, 160, 80, 23, () => respondToPvpRequest(request.id, true));
+  addScreenText(frame, "否", 1153, 529, 80, 40, 22, "center large");
+  addHotspot(frame, 1120, 509, 160, 80, 23, () => respondToPvpRequest(request.id, false));
 }
 
-function eventPopupContentLayout() {
+function eventPopupContentLayout({ compactOptionsBottom = false } = {}) {
   const top = 350;
   const bottom = 762;
   const height = bottom - top;
-  const storyHeight = Math.round(height * 0.4);
-  const gap = Math.round(height * 0.2);
+  const popupHeight = 638;
+  const optionsBottom = compactOptionsBottom ? bottom - Math.round(popupHeight * 0.1) : bottom;
+  const minOptionsHeight = compactOptionsBottom ? 96 : 0;
+  const gap = compactOptionsBottom ? Math.round(popupHeight * 0.15) : Math.round(height * 0.2);
+  const storyHeight = compactOptionsBottom
+    ? Math.max(64, optionsBottom - top - gap - minOptionsHeight)
+    : Math.round(height * 0.4);
   const optionsTop = top + storyHeight + gap;
   return {
     x: 485,
     width: 978,
     storyTop: top,
     storyHeight,
+    optionsGap: gap,
+    optionsBottom,
     optionsTop,
-    optionsHeight: bottom - optionsTop,
+    optionsHeight: optionsBottom - optionsTop,
   };
 }
 
@@ -1344,9 +1392,9 @@ function renderEventChoiceOverlay(frame, overlay) {
   addImageButton(frame, "./image_UI/取消4-1.png", 1433, 281, 30, 30, 23, cancelEventSelection);
   addImageButton(frame, "./image_UI/确定4-1.png", 893, 782, 161, 57, 23, confirmEventSelection, !syncSession.selectedEventOptionId);
 
-  const layout = eventPopupContentLayout();
+  const layout = eventPopupContentLayout({ compactOptionsBottom: true });
   addScreenText(frame, eventData.title || "事件", 485, 310, 978, 34, 22, "large center");
-  addScrollableScreenText(
+  const storyBox = addScrollableScreenText(
     frame,
     eventData.narrative || "",
     layout.x,
@@ -1356,10 +1404,13 @@ function renderEventChoiceOverlay(frame, overlay) {
     22,
     "event-body event-popup-story"
   );
+  const storyHeight = fitScrollableTextBox(storyBox, layout.storyHeight, 56);
+  const optionsTop = layout.storyTop + storyHeight + layout.optionsGap;
+  const optionsHeight = Math.max(72, layout.optionsBottom - optionsTop);
 
   const list = document.createElement("div");
   list.className = "screen-text event-options-list";
-  setRect(list, layout.x, layout.optionsTop, layout.width, layout.optionsHeight, 22);
+  setRect(list, layout.x, optionsTop, layout.width, optionsHeight, 22);
 
   eventData.options.forEach((option) => {
     const btn = document.createElement("button");
@@ -1520,8 +1571,7 @@ function confirmOpportunitySelection() {
 
   player.opportunityUsed = true;
   applyImmediateChoiceEffects(player, option.effects);
-  const summary = writeEventRecord(player, overlay.eventData, option);
-  queueGlobalEffects(player, option.effects, summary);
+  writeEventRecord(player, overlay.eventData, option);
 
   let rewardItem = null;
   if (didSucceed) {
@@ -1563,8 +1613,7 @@ function confirmEventSelection() {
   }
 
   applyImmediateChoiceEffects(player, option.effects);
-  const summary = writeEventRecord(player, overlay.eventData, option);
-  queueGlobalEffects(player, option.effects, summary);
+  writeEventRecord(player, overlay.eventData, option);
   syncSession.overlay = null;
   syncSession.selectedEventOptionId = null;
   consumeLocalAction();
@@ -1846,11 +1895,12 @@ function renderCourtVoteOverlay(frame) {
   addAsset(frame, "./image_UI/背景模糊遮罩4-3.png", 5, 0, 1915, 1158, 20);
   addAsset(frame, "./image_UI/审批背景框4-3.png", 410, 274, 1100, 611, 21);
 //  addScreenText(frame, session.eventData.title || "法庭议题", 485, 330, 930, 36, 22, "center large");
-  addScrollableScreenText(frame, session.eventData.narrative || "", 485, 390, 930, 200, 22, "event-body");
+  const narrativeBox = addScrollableScreenText(frame, session.eventData.narrative || "", 485, 390, 930, 200, 22, "event-body");
+  fitScrollableTextBox(narrativeBox, 200, 80);
   const support = courtVoteOption(session, "support");
   const oppose = courtVoteOption(session, "oppose");
   const abstain = courtVoteOption(session, "abstain");
-  addScrollableScreenText(
+  const guideBox = addScrollableScreenText(
     frame,
     `支持：${support?.description || support?.label || "改革方案"}\n${support?.voterProfile ? `支持者：${support.voterProfile}\n` : ""}反对：${oppose?.description || oppose?.label || "维持现状"}\n${oppose?.voterProfile ? `反对者：${oppose.voterProfile}\n` : ""}弃权：${abstain?.description || "政策悬置，不形成明确公共意志。"}${abstain?.voterProfile ? `\n弃权者：${abstain.voterProfile}` : ""}`,
     560,
@@ -1858,11 +1908,12 @@ function renderCourtVoteOverlay(frame) {
     800,
     200,
     22,
-    "small center"
+    "event-body"
   );
-  addImageButton(frame, "./image_UI/支持4-3.png", 573, 826, 138.5, 57, 23, () => castDesignedCourtVote("support"));
-  addImageButton(frame, "./image_UI/反对4-3.png", 892, 826, 138.5, 57, 23, () => castDesignedCourtVote("oppose"));
-  addImageButton(frame, "./image_UI/弃权4-3.png", 1211, 826, 138.5, 57, 23, () => castDesignedCourtVote("abstain"));
+  fitScrollableTextBox(guideBox, 200, 80);
+  addImageButton(frame, "./image_UI/支持4-3.png", 573, 796, 138.5, 57, 23, () => castDesignedCourtVote("support"));
+  addImageButton(frame, "./image_UI/反对4-3.png", 892, 796, 138.5, 57, 23, () => castDesignedCourtVote("oppose"));
+  addImageButton(frame, "./image_UI/弃权4-3.png", 1211, 796, 138.5, 57, 23, () => castDesignedCourtVote("abstain"));
 }
 
 function castDesignedCourtVote(vote) {
@@ -1922,11 +1973,8 @@ async function finalizeDesignedCourtVote() {
   }
 
   if (winner) {
-    state.players.forEach((player, idx) => {
-      applyEffects(state, player.id, {
-        ...winner.effects,
-        global: idx === 0 ? winner.effects.global : emptyGlobalEffects(),
-      });
+    state.players.forEach((player) => {
+      applyEffects(state, player.id, winner.effects);
     });
     impactText = `你受到的数值影响：${effectPreview(winner.effects, getLocalPlayer())}`;
     if (top[1] >= 3) {
@@ -2009,8 +2057,8 @@ function renderCourtResultOverlay(frame, overlay) {
   addAsset(frame, "./image_UI/背景模糊遮罩4-4.png", 5, 0, 1915, 1158, 20);
   addAsset(frame, "./image_UI/通知背景框4-4.png", 562, 327, 797, 505, 21);
   addAsset(frame, "./image_UI/结果宣判4-4.png", 880, 367, 170, 47, 22);
-  addScrollableScreenText(frame, overlay.message || "法庭结果已结算。", 618, 442, 708, 245, 22, "event-body center");
-  addImageButton(frame, "./image_UI/确定4-4.png", 880, 769, 161, 57, 23, () => {
+  addScrollableScreenText(frame, overlay.message || "法庭结果已结算。", 618, 442, 708, 245, 22, "event-body");
+  addImageButton(frame, "./image_UI/确定4-4.png", 880, 749, 161, 57, 23, () => {
     syncSession.overlay = overlay.rewardItem ? { type: "itemReward", item: overlay.rewardItem } : null;
     renderGameScreen();
   });
@@ -2073,7 +2121,6 @@ function esc(s) {
 
 function effectPreview(effects, player = null) {
   const self = effects?.self || {};
-  const global = effects?.global || {};
   const combinedSelf = {
     health: Number(self.health || 0),
     reputation: Number(self.reputation || 0),
@@ -2093,8 +2140,6 @@ function effectPreview(effects, player = null) {
   pushNum("名誉", effective.reputation || 0);
   pushNum("财富", effective.wealth || 0);
   pushNum("存活", effective.survivalProgress || effects?.meta?.survivalProgress || 0);
-  pushNum("全体健康", global.allHealthDelta || 0);
-  pushNum("平等", -(global.socialGap || 0));
   if (effects?.intimacyDelta?.initiator || effects?.intimacyDelta?.target) {
     chunks.push(`亲密度Δ${(effects.intimacyDelta.initiator || 0) + (effects.intimacyDelta.target || 0)}`);
   }
@@ -2229,31 +2274,10 @@ function addFeed({ player, tag, summary }) {
   });
 }
 
-function emptyGlobalEffects() {
-  return { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 };
-}
-
-function hasGlobalEffect(global = {}) {
-  return ["socialGap", "maleRights", "femaleRights", "allHealthDelta"].some((key) => Number(global[key] || 0) !== 0);
-}
-
 function applyImmediateChoiceEffects(player, effects) {
   applyEffects(state, player.id, {
     self: effects?.self || {},
-    global: emptyGlobalEffects(),
     meta: effects?.meta || {},
-  });
-}
-
-function queueGlobalEffects(player, effects, summary) {
-  const global = effects?.global || {};
-  if (!hasGlobalEffect(global)) return;
-  syncSession.pendingGlobalEffects.push({
-    round: state.round,
-    playerId: player.id,
-    playerName: player.name,
-    global: { ...emptyGlobalEffects(), ...global },
-    summary,
   });
 }
 
@@ -2272,8 +2296,7 @@ function logChoice(player, scene, choice, summary, relatedPlayerIds = [player.id
 function applyMeditate(player) {
   const effects = {
     self: { health: 6, reputation: 0, wealth: 0 },
-    global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-    meta: { survivalProgress: 4, equalityProgress: 0, major: false, tag: "🧘" },
+    meta: { survivalProgress: 4, tag: tagForScene("meditate") },
   };
   applyImmediateChoiceEffects(player, effects);
 
@@ -2304,15 +2327,10 @@ function wealthDeltaLimit(scene, subScene) {
   return 1.8;
 }
 
-function allowsAllHealthDelta(scene, subScene) {
-  return scene === "court" || (scene === "culture" && subScene === "square");
-}
-
 function sanitizeOptionEffects(option, scene, subScene, player = null) {
   const safe = option;
   safe.effects = safe.effects || {};
   safe.effects.self = safe.effects.self || {};
-  safe.effects.global = safe.effects.global || {};
   safe.effects.meta = safe.effects.meta || {};
 
   const isNoDiscuss = safe.id === "opt_no_discuss";
@@ -2321,14 +2339,7 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
     safe.effects.self.health = -3;
     safe.effects.self.reputation = 0;
     safe.effects.self.wealth = 0;
-    safe.effects.global.socialGap = 0;
-    safe.effects.global.maleRights = 0;
-    safe.effects.global.femaleRights = 0;
-    safe.effects.global.allHealthDelta = 0;
     safe.effects.meta.survivalProgress = -2;
-    safe.effects.meta.equalityProgress = 0;
-    safe.effects.meta.major = false;
-    safe.effects.meta.tag = "🗣️";
   }
 
   if (scene === "culture" && subScene === "library" && !isNoDiscuss) {
@@ -2340,14 +2351,8 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
     safe.effects.self.reputation = r >= 0 ? r : 1;
     safe.effects.self.wealth = w <= 0 ? w : -1;
 
-    safe.effects.global.allHealthDelta = 0;
-    safe.effects.meta.major = false;
-    safe.effects.meta.tag = "📚";
-
     const survival = Number(safe.effects.meta.survivalProgress || 0);
-    const equality = Number(safe.effects.meta.equalityProgress || 0);
     safe.effects.meta.survivalProgress = survival > 0 ? survival : 2;
-    safe.effects.meta.equalityProgress = equality > 0 ? equality : 2;
   }
 
   if (scene === "culture" && subScene === "counseling" && !isNoDiscuss) {
@@ -2363,34 +2368,21 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
       safe.effects.self.reputation = r > 0 ? 0 : r;
     }
 
-    safe.effects.global.allHealthDelta = 0;
-    safe.effects.meta.major = false;
-    safe.effects.meta.tag = "🛋️";
-
     const survival = Number(safe.effects.meta.survivalProgress || 0);
     safe.effects.meta.survivalProgress = survival > 0 ? survival : 2;
   }
 
   if (scene === "opportunity") {
-    safe.effects.global.allHealthDelta = 0;
-    safe.effects.meta.tag = "🎲";
-
     if (safe.id === "success") {
       safe.effects.self.health = Math.max(10, Number(safe.effects.self.health || 0));
       safe.effects.self.reputation = Math.max(8, Number(safe.effects.self.reputation || 0));
       safe.effects.self.wealth = Math.max(8, Number(safe.effects.self.wealth || 0));
-      safe.effects.global.socialGap = Math.min(-1, Number(safe.effects.global.socialGap || -1));
-      safe.effects.meta.major = true;
     }
 
     if (safe.id === "failure") {
       safe.effects.self.health = Math.min(-1, Number(safe.effects.self.health || -3));
       safe.effects.self.reputation = Math.min(0, Number(safe.effects.self.reputation || -1));
       safe.effects.self.wealth = Math.min(0, Number(safe.effects.self.wealth || -1));
-      safe.effects.global.socialGap = 0;
-      safe.effects.global.maleRights = 0;
-      safe.effects.global.femaleRights = 0;
-      safe.effects.meta.major = false;
     }
   }
 
@@ -2401,16 +2393,12 @@ function sanitizeOptionEffects(option, scene, subScene, player = null) {
   safe.effects.self.health = Math.round(clampNum(safe.effects.self.health, -35, healthGainCap));
   safe.effects.self.reputation = Math.round(clampNum(safe.effects.self.reputation, -30, reputationCap));
 
-  safe.effects.global.socialGap = Math.round(clampNum(safe.effects.global.socialGap, -10, 10));
-  safe.effects.global.maleRights = Math.round(clampNum(safe.effects.global.maleRights, -6, 6));
-  safe.effects.global.femaleRights = Math.round(clampNum(safe.effects.global.femaleRights, -6, 6));
-  safe.effects.global.allHealthDelta = allowsAllHealthDelta(scene, subScene)
-    ? Math.round(clampNum(safe.effects.global.allHealthDelta, -10, 10))
-    : 0;
+  delete safe.effects.global;
 
-  safe.effects.meta.survivalProgress = Math.round(clampNum(safe.effects.meta.survivalProgress, -20, 20));
-  safe.effects.meta.equalityProgress = Math.round(clampNum(safe.effects.meta.equalityProgress, -20, 20));
-  safe.effects.meta.tag = String(safe.effects.meta.tag || "📌");
+  safe.effects.meta = {
+    survivalProgress: Math.round(clampNum(safe.effects.meta.survivalProgress, -20, 20)),
+    tag: tagForScene(scene, subScene),
+  };
 
   if (player) {
     const effective = calculateEffectiveDelta(player, {
@@ -2440,8 +2428,7 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
         thread: { status: "closed", summary: "事件以谨慎方式收束，暂无后续悬念。" },
         effects: {
           self: { health: -1, reputation: 0, wealth: 0 },
-          global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-          meta: { survivalProgress: 0, equalityProgress: 0, major: false, tag: "🧩" },
+          meta: { survivalProgress: 0, tag: "🧩" },
         },
       },
     ];
@@ -2466,8 +2453,7 @@ function normalizeEvent(raw, scene = "workplace", subScene = null, player = null
       thread: { status: "closed", summary: "玩家未介入公共讨论，事件线不再延展。" },
       effects: {
         self: { health: -3, reputation: 0, wealth: 0 },
-        global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-        meta: { survivalProgress: -2, equalityProgress: 0, major: false, tag: "🗣️" },
+        meta: { survivalProgress: -2, tag: "🗣️" },
       },
     });
   }
@@ -2497,7 +2483,6 @@ function handleOptionChoose(eventData, option) {
   applyImmediateChoiceEffects(player, option.effects);
 
   const summary = option.summary || `${eventData.title} -> ${option.label}`;
-  queueGlobalEffects(player, option.effects, summary);
   const thread = {
     ...eventData.thread,
     ...(option.thread || {}),
@@ -2826,14 +2811,8 @@ function finalizeCourtVote() {
   if (top[1] > second[1]) {
     const winner = session.eventData.options.find((x) => x.id === top[0]);
     if (winner) {
-      state.players.forEach((p2, idx) => {
-        applyEffects(state, p2.id, {
-          ...winner.effects,
-          global:
-            idx === 0
-              ? winner.effects.global
-              : { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-        });
+      state.players.forEach((p2) => {
+        applyEffects(state, p2.id, winner.effects);
       });
       addFeed({
         player: state.players[0],
@@ -2978,7 +2957,7 @@ function validatePvpRequest(action, initiator, target) {
   if (initiator.id === target.id) return { ok: false, message: "不能对自己发起PVP请求。" };
 
   if (action === "marriage") {
-    if (!canRequestMarriage(initiator, target)) return { ok: false, message: "结婚申请仅限不同性别角色。" };
+    if (initiator.gender === target.gender) return { ok: false, message: "结婚申请仅限不同性别角色。" };
     if (initiator.marriedTo || target.marriedTo) return { ok: false, message: "结婚申请仅限双方当前都无伴侣关系。" };
   }
 
@@ -3225,7 +3204,7 @@ async function resolveRelationshipActionNow(action, initiator, target) {
   if (action === "marriage" && (initiator.marriedTo || target.marriedTo)) {
     addFeed({
       player: initiator,
-      tag: "🤝",
+      tag: tagForRelationshipAction(action),
       summary: `${initiator.name}与${target.name}的结婚申请因关系状态变化未能生效。`,
     });
     return false;
@@ -3233,7 +3212,7 @@ async function resolveRelationshipActionNow(action, initiator, target) {
   if (action === "divorce" && initiator.marriedTo !== target.id) {
     addFeed({
       player: initiator,
-      tag: "🤝",
+      tag: tagForRelationshipAction(action),
       summary: `${initiator.name}的离婚申请因关系状态变化未能生效。`,
     });
     return false;
@@ -3268,11 +3247,6 @@ async function resolveRelationshipActionNow(action, initiator, target) {
   applyLocalDelta(state, initiator, result.effects?.initiator);
   applyLocalDelta(state, target, result.effects?.target);
 
-  const global = result.effects?.global || {};
-  state.socialGap = Math.max(0, state.socialGap + (global.socialGap || 0));
-  state.maleRights = Math.max(0, Math.min(100, state.maleRights + (global.maleRights || 0)));
-  state.femaleRights = Math.max(0, Math.min(100, state.femaleRights + (global.femaleRights || 0)));
-
   if (action === "marriage") {
     createMarriage(state, initiator.id, target.id, result.effects?.marriage?.initIntimacy || 60);
   }
@@ -3296,7 +3270,7 @@ async function resolveRelationshipActionNow(action, initiator, target) {
   const summary = result.summary || `${initiator.name}与${target.name}：${result.title || action}`;
   addFeed({
     player: initiator,
-    tag: result.tag || "🤝",
+    tag: tagForRelationshipAction(action),
     summary,
   });
 
@@ -3311,38 +3285,33 @@ function buildSimulatedEffects(scene, subScene = null) {
   if (scene === "meditate") {
     return {
       self: { health: 5, reputation: 0, wealth: 0 },
-      global: emptyGlobalEffects(),
-      meta: { tag: "🧘" },
+      meta: { tag: tagForScene("meditate") },
     };
   }
 
   if (scene === "culture" && subScene === "library") {
     return {
       self: { health: 3, reputation: 1, wealth: -1 },
-      global: { socialGap: -1, maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
-      meta: { tag: "📚" },
+      meta: { tag: tagForScene(scene, subScene) },
     };
   }
 
   if (scene === "culture" && subScene === "square") {
     return {
       self: { health: -4, reputation: 2, wealth: 0 },
-      global: { socialGap: -1, maleRights: 1, femaleRights: 1, allHealthDelta: -1 },
-      meta: { tag: "🗣️" },
+      meta: { tag: tagForScene(scene, subScene) },
     };
   }
 
   const assertive = Math.random() > 0.45;
-  const tag = scene === "family" ? "🏠" : scene === "opportunity" ? "🎲" : "💼";
+  const tag = tagForScene(scene, subScene);
   return assertive
     ? {
         self: { health: -4, reputation: 3, wealth: -1 },
-        global: { socialGap: -2, maleRights: 1, femaleRights: 2, allHealthDelta: 0 },
         meta: { tag },
       }
     : {
         self: { health: -1, reputation: -1, wealth: 1 },
-        global: { socialGap: 1, maleRights: 1, femaleRights: 0, allHealthDelta: 0 },
         meta: { tag },
       };
 }
@@ -3364,7 +3333,6 @@ function applySimulatedSceneAction(player, scene, subScene = null) {
   const summary = `${player.name}${label}。`;
 
   applyImmediateChoiceEffects(player, effects);
-  queueGlobalEffects(player, effects, summary);
   addFeed({ player, tag: effects.meta.tag, summary });
   logChoice(player, scene === "culture" ? `culture/${subScene || "square"}` : scene, label, summary);
 }
@@ -3487,28 +3455,6 @@ async function resolvePendingPvpRequests(roundNumber) {
   );
 }
 
-function applyPendingGlobalEffects(roundNumber) {
-  const entries = syncSession.pendingGlobalEffects.filter((entry) => entry.round === roundNumber);
-  entries.forEach((entry) => {
-    const player = state.players.find((p) => p.id === entry.playerId) || state.players[0];
-    applyEffects(state, player.id, {
-      self: {},
-      global: entry.global,
-      meta: { tag: "📊" },
-    });
-  });
-
-  if (entries.length > 0) {
-    addFeed({
-      player: state.players[0],
-      tag: "📊",
-      summary: `回合${roundNumber}同步应用了${entries.length}项全局影响。`,
-    });
-  }
-
-  syncSession.pendingGlobalEffects = syncSession.pendingGlobalEffects.filter((entry) => entry.round !== roundNumber);
-}
-
 function appendRoundJournal(rows, roundNumber) {
   if (!Array.isArray(rows) || rows.length === 0) return;
   state.players.forEach((player, idx) => {
@@ -3572,7 +3518,6 @@ async function submitLocalTurnAndResolveRound() {
     renderGameScreen();
     await resolvePendingPvpActions(roundNumber);
     await resolvePendingPvpRequests(roundNumber);
-    applyPendingGlobalEffects(roundNumber);
     decayIntimacyForRound(state, 2);
     tickRoundItems();
     await settleRoundEvaluation(roundNumber);
@@ -3606,13 +3551,23 @@ async function settleRoundEvaluation(roundNumber) {
   if (rows.length === 0) return;
   appendRoundJournal(rows, roundNumber);
 
-  const roundChoicesText = rows
-    .map((x, idx) => `${idx + 1}. ${x.playerName} [${x.scene}] 选择: ${x.choice}; ${x.summary}`)
+  syncSession.pendingRightsEvaluationRows = Array.isArray(syncSession.pendingRightsEvaluationRows)
+    ? syncSession.pendingRightsEvaluationRows
+    : [];
+  syncSession.pendingRightsEvaluationRows.push(...rows);
+
+  if (roundNumber % RIGHTS_EVALUATION_INTERVAL !== 0) return;
+
+  const evaluationRows = syncSession.pendingRightsEvaluationRows.slice();
+  if (evaluationRows.length === 0) return;
+
+  const roundChoicesText = evaluationRows
+    .map((x, idx) => `${idx + 1}. 第${x.round}回合 ${x.playerName} [${x.scene}] 选择: ${x.choice}; ${x.summary}`)
     .join("\n");
 
   let result = null;
   try {
-    result = await runWithLoading("AI正在进行本轮7维平等结算...", () =>
+    result = await runWithLoading("AI正在进行近三轮社会权益结算...", () =>
       evaluateRoundRights(
         {
           gameState: state,
@@ -3633,12 +3588,15 @@ async function settleRoundEvaluation(roundNumber) {
   }
 
   applyRoundEvaluation(state, result);
+  syncSession.pendingRightsEvaluationRows = [];
 
   const current = state.players[state.currentPlayerIndex];
   addFeed({
     player: current,
     tag: "📊",
-    summary: `回合${roundNumber}评估：${result.summary || "完成7维平等结算"}`,
+    summary: `回合${roundNumber - RIGHTS_EVALUATION_INTERVAL + 1}-${roundNumber}权益评估：${
+      result.summary || "完成近三轮社会权益结算"
+    }`,
   });
 }
 

@@ -669,17 +669,6 @@ function normalizeSingleInitPlayer(rawPlayer, idx, expectedGender) {
 }
 
 function mockEvent({ scene, subScene, player, gameState }) {
-  const sceneTag =
-    scene === "workplace"
-      ? "💼"
-      : scene === "family"
-      ? "🏠"
-      : scene === "culture"
-      ? "🗣️"
-      : scene === "opportunity"
-      ? "🎲"
-      : "⚖️";
-
   const familyTitles = player?.marriedTo
     ? ["家务分工协商", "家庭责任再平衡", "共同财务决策分歧", "育儿参与边界讨论"]
     : ["家务分工冲突", "催婚压力与职业规划", "育儿责任归属争执"];
@@ -710,8 +699,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           description: "建立维权与协商知识框架，日常表达更有底气。",
           effects: {
             self: { health: 3, reputation: 1, wealth: -1 },
-            global: { socialGap: -1, maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
-            meta: { survivalProgress: 2, equalityProgress: 3, major: false, tag: "📚" },
+            meta: { survivalProgress: 2 },
           },
         },
         {
@@ -720,8 +708,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           description: "通过练习降低沟通摩擦，提升关系协商能力。",
           effects: {
             self: { health: 4, reputation: 0, wealth: -1 },
-            global: { socialGap: -1, maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
-            meta: { survivalProgress: 3, equalityProgress: 2, major: false, tag: "📚" },
+            meta: { survivalProgress: 3 },
           },
         },
       ],
@@ -746,8 +733,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           description: "恢复更明显，但需要支付较高费用。",
           effects: {
             self: { health: 9, reputation: 0, wealth: -2 },
-            global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-            meta: { survivalProgress: 4, equalityProgress: 1, major: false, tag: "🛋️" },
+            meta: { survivalProgress: 4 },
           },
         },
         {
@@ -756,8 +742,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           description: "恢复中等，经济代价较低但会承担一定名誉成本。",
           effects: {
             self: { health: 6, reputation: -1, wealth: -0.8 },
-            global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-            meta: { survivalProgress: 3, equalityProgress: 1, major: false, tag: "🛋️" },
+            meta: { survivalProgress: 3 },
           },
         },
       ],
@@ -778,13 +763,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           reputation: Math.round(base * 0.6),
           wealth: -Math.round(base * 0.3),
         },
-        global: {
-          socialGap: -Math.round(base * 0.5),
-          maleRights: 1,
-          femaleRights: 2,
-          allHealthDelta: scene === "culture" && subScene === "square" ? -2 : 0,
-        },
-        meta: { survivalProgress: 4, equalityProgress: 8, major: true, tag: sceneTag },
+        meta: { survivalProgress: 4 },
       },
     },
     {
@@ -797,13 +776,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           reputation: -1,
           wealth: 1,
         },
-        global: {
-          socialGap: -1,
-          maleRights: 1,
-          femaleRights: 1,
-          allHealthDelta: scene === "culture" && subScene === "square" ? -1 : 0,
-        },
-        meta: { survivalProgress: 2, equalityProgress: 2, major: false, tag: sceneTag },
+        meta: { survivalProgress: 2 },
       },
     },
     {
@@ -816,13 +789,7 @@ function mockEvent({ scene, subScene, player, gameState }) {
           reputation: -Math.round(base * 0.5),
           wealth: 0,
         },
-        global: {
-          socialGap: Math.round(base * 0.35),
-          maleRights: 2,
-          femaleRights: 0,
-          allHealthDelta: scene === "culture" && subScene === "square" ? -3 : 0,
-        },
-        meta: { survivalProgress: -2, equalityProgress: -7, major: true, tag: sceneTag },
+        meta: { survivalProgress: -2 },
       },
     },
   ];
@@ -884,8 +851,7 @@ function mockOpportunityEvent({ player }) {
             reputation: Math.round(10 + Math.random() * 12),
             wealth: roundTo1(10 + Math.random() * 25),
           },
-          global: { socialGap: -Math.round(1 + Math.random() * 3), maleRights: 0, femaleRights: 1, allHealthDelta: 0 },
-          meta: { survivalProgress: 12, equalityProgress: 3, major: true, tag: "🎲" },
+          meta: { survivalProgress: 12 },
         },
       },
       {
@@ -900,8 +866,7 @@ function mockOpportunityEvent({ player }) {
             reputation: -Math.round(1 + Math.random() * 4),
             wealth: -roundTo1(0.5 + Math.random() * 3),
           },
-          global: { socialGap: 0, maleRights: 0, femaleRights: 0, allHealthDelta: 0 },
-          meta: { survivalProgress: -3, equalityProgress: 0, major: false, tag: "🎲" },
+          meta: { survivalProgress: -3 },
         },
       },
     ],
@@ -1053,18 +1018,9 @@ export async function generateCourtResult(params, apiKey) {
 
 function mockRoundEvaluation() {
   return {
-    dimensions: {
-      legal: Math.round(Math.random() * 2 - 1),
-      economyEmployment: Math.round(Math.random() * 3 - 1),
-      educationDevelopment: Math.round(Math.random() * 2 - 1),
-      familyMarriage: Math.round(Math.random() * 3 - 1),
-      healthSafety: Math.round(Math.random() * 3 - 1),
-      socialVoice: Math.round(Math.random() * 3 - 1),
-      riskBurdenSymmetry: Math.round(Math.random() * 3 - 1),
-    },
-    maleDelta: Math.round(Math.random() * 3 - 1),
-    femaleDelta: Math.round(Math.random() * 5 - 2),
-    summary: "本轮多起事件触发公众讨论，平等进展出现局部改善。",
+    maleDelta: Math.round(Math.random() * 7 - 3),
+    femaleDelta: Math.round(Math.random() * 9 - 3),
+    summary: "近三轮经历被汇总为一次社会权益调整，权利结构出现小幅变化。",
   };
 }
 
@@ -1186,11 +1142,9 @@ function mockRelationship({ action, initiator, target }) {
       effects: {
         initiator: { health: -1, reputation: 1, wealth: 0, survivalProgress: 0 },
         target: { health: femaleBoost, reputation: 1, wealth: 0, survivalProgress: 0 },
-        global: { socialGap: -1, maleRights: 1, femaleRights: 1 },
         intimacyDelta: { initiator: 8, target: 8 },
         marriage: { createSharedWealth: true, initIntimacy: 60 + Math.round(wealthFactor * 18) },
       },
-      tag: "💍",
     };
   }
 
@@ -1201,11 +1155,9 @@ function mockRelationship({ action, initiator, target }) {
       effects: {
         initiator: { health: -4, reputation: -2, wealth: 0, survivalProgress: 0 },
         target: { health: -3, reputation: -2, wealth: 0, survivalProgress: 0 },
-        global: { socialGap: 1, maleRights: 0, femaleRights: 0 },
         intimacyDelta: { initiator: -50, target: -50 },
         marriage: { createSharedWealth: false, initIntimacy: 0 },
       },
-      tag: "💔",
     };
   }
 
@@ -1215,11 +1167,9 @@ function mockRelationship({ action, initiator, target }) {
     effects: {
       initiator: { health: 4, reputation: 1, wealth: 2, survivalProgress: 0 },
       target: { health: -1, reputation: 2, wealth: -2, survivalProgress: 0 },
-      global: { socialGap: -1, maleRights: 0, femaleRights: 1 },
       intimacyDelta: { initiator: 3, target: 2 },
       marriage: { createSharedWealth: false, initIntimacy: 0 },
     },
-    tag: "🤝",
   };
 }
 

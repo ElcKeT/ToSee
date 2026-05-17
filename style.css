@@ -217,7 +217,7 @@ body {
 }
 
 .screen-text.event-body.center {
-  text-align: center;
+  text-align: justify;
 }
 
 .screen-text.scrollable {
@@ -356,7 +356,7 @@ body {
 }
 
 .game-progress.signed {
-  background: rgba(172, 225, 255, 0.48);
+  background: #ace1ff;
 }
 
 .game-progress-fill.positive {

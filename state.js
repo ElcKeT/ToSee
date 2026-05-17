@@ -33,6 +33,8 @@ export function createInitialStateFromPlayers(inputPlayers) {
   const players = Array.isArray(inputPlayers) && inputPlayers.length === 4
     ? inputPlayers.map((p, idx) => buildPlayerFromSeed(p, idx))
     : buildRandomPlayers();
+  const maleRights = 50;
+  const femaleRights = 45;
 
   return {
     round: 1,
@@ -42,18 +44,9 @@ export function createInitialStateFromPlayers(inputPlayers) {
     primaryActionTaken: false,
     cultureActionTaken: false,
     courtDoneRounds: [],
-    socialGap: randomInt(8, 18),
-    maleRights: 50,
-    femaleRights: 45,
-    equalityDimensions: {
-      legal: 50,
-      economyEmployment: 50,
-      educationDevelopment: 50,
-      familyMarriage: 50,
-      healthSafety: 50,
-      socialVoice: 50,
-      riskBurdenSymmetry: 50,
-    },
+    socialGap: Math.abs(maleRights - femaleRights),
+    maleRights,
+    femaleRights,
     sharedWealthPools: {},
     nextPoolId: 1,
     activeFortuneSwaps: [],
@@ -291,7 +284,6 @@ export function applyEffects(state, playerId, effects) {
   if (!player || !effects) return;
 
   const self = effects.self || {};
-  const global = effects.global || {};
 
   syncPlayerWealthFromPool(state, player);
 
@@ -303,26 +295,11 @@ export function applyEffects(state, playerId, effects) {
   };
 
   const combinedSelf = {
-    health: Number(self.health || 0) + Number(global.allHealthDelta || 0),
+    health: Number(self.health || 0),
     reputation: Number(self.reputation || 0),
     wealth: Number(self.wealth || 0),
   };
   applyCalculatedDelta(state, player, combinedSelf);
-
-  if (global.allHealthDelta) {
-    state.players.forEach((p) => {
-      if (p.id === player.id) return;
-      applyCalculatedDelta(state, p, {
-        health: global.allHealthDelta,
-        reputation: 0,
-        wealth: 0,
-      });
-    });
-  }
-
-  state.socialGap = Math.max(0, state.socialGap + (global.socialGap || 0));
-  state.maleRights = utils.clamp(state.maleRights + (global.maleRights || 0), 0, 100);
-  state.femaleRights = utils.clamp(state.femaleRights + (global.femaleRights || 0), 0, 100);
 
   player.lastDelta = {
     health: player.stats.health - before.health,
@@ -409,13 +386,10 @@ export function decayIntimacyForRound(state, decay = 2) {
 }
 
 export function applyRoundEvaluation(state, evaluation) {
-  const dims = evaluation?.dimensions || {};
-  Object.keys(state.equalityDimensions).forEach((k) => {
-    state.equalityDimensions[k] = utils.clamp(state.equalityDimensions[k] + (dims[k] || 0), 0, 100);
-  });
-
-  state.maleRights = utils.clamp(state.maleRights + (evaluation?.maleDelta || 0), 0, 100);
-  state.femaleRights = utils.clamp(state.femaleRights + (evaluation?.femaleDelta || 0), 0, 100);
+  const maleDelta = Math.round(utils.clamp(Number(evaluation?.maleDelta || 0), -10, 10));
+  const femaleDelta = Math.round(utils.clamp(Number(evaluation?.femaleDelta || 0), -10, 10));
+  state.maleRights = utils.clamp(state.maleRights + maleDelta, 0, 100);
+  state.femaleRights = utils.clamp(state.femaleRights + femaleDelta, 0, 100);
   state.socialGap = Math.abs(state.maleRights - state.femaleRights);
 }
 
