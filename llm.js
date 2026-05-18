@@ -126,6 +126,18 @@ function safeArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+export function shuffleCharacterRoles(roles = []) {
+  const copy = safeArray(roles).map((role) => ({ ...role }));
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.map((role, idx) => ({
+    ...role,
+    slot: idx + 1,
+  }));
+}
+
 function trimBio(text, max = 120) {
   const value = String(text || "")
     .replace(/\s+/g, " ")
@@ -559,7 +571,8 @@ function buildMockCharacter(gender, ageBase, idx) {
 
 function mockInitialCharacters() {
   const cohortResult = mockCharacterCohort();
-  const players = cohortResult.roles.map((seed, idx) =>
+  const roles = shuffleCharacterRoles(cohortResult.roles);
+  const players = roles.map((seed, idx) =>
     normalizeSingleInitPlayer(
       buildMockPlayerFromSeed({ seed, cohort: cohortResult.cohort, slot: idx + 1 }),
       idx,
@@ -1427,14 +1440,15 @@ export async function generateInitialCharacter({ slot = 1, seed = null, cohort =
 export async function generateInitialCharacters(apiKey) {
   try {
     const cohortResult = await generateCharacterCohort(apiKey);
+    const roles = shuffleCharacterRoles(cohortResult.roles);
     const rows = await Promise.all(
-      cohortResult.roles.map((seed, idx) =>
+      roles.map((seed, idx) =>
         generateInitialCharacter(
           {
             slot: idx + 1,
             seed,
             cohort: cohortResult.cohort,
-            allSeeds: cohortResult.roles,
+            allSeeds: roles,
           },
           apiKey
         )
@@ -1444,9 +1458,9 @@ export async function generateInitialCharacters(apiKey) {
       (row, idx) =>
         row?.player ||
         normalizeSingleInitPlayer(
-          buildMockPlayerFromSeed({ seed: cohortResult.roles[idx], cohort: cohortResult.cohort, slot: idx + 1 }),
+          buildMockPlayerFromSeed({ seed: roles[idx], cohort: cohortResult.cohort, slot: idx + 1 }),
           idx,
-          cohortResult.roles[idx]?.gender
+          roles[idx]?.gender
         )
     );
 

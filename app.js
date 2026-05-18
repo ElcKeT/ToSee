@@ -9,6 +9,7 @@ import {
   generateSceneEvent,
   generateSocialEnding,
   resolveRelationshipAction,
+  shuffleCharacterRoles,
 } from "./llm.js";
 import { buildHistorySummary } from "./prompts.js";
 import {
@@ -497,6 +498,7 @@ function renderMatchScreen() {
   setGameVisible(false);
   const frame = createScreenFrame();
   const player = matchSession.players[0];
+  const playerSeed = matchSession.roleSeeds[0];
   const allReady = matchSession.statuses.every((status) => status === "ready" || status === "error");
 
   addAsset(frame, "./image_UI/背景2.png", 0, 0, 1920, 1080, 0);
@@ -506,12 +508,17 @@ function renderMatchScreen() {
   addImageButton(frame, "./image_UI/返回2.png", 61, 29, 130, 82, 4, cancelMatchAndReturn);
   addImageButton(frame, "./image_UI/开启按键2.png", 655, 912, 610, 122, 5, startGameFromMatch, !allReady);
 
-  const avatarSrc = player?.gender === "female" ? "./image_UI/女头像.png" : "./image_UI/男头像.png";
+  const displayGender = player?.gender || playerSeed?.gender;
+  const avatarSrc = displayGender === "female" ? "./image_UI/女头像.png" : "./image_UI/男头像.png";
   addAsset(frame, avatarSrc, 777, 290, 110, 110, 6);
 
   addScreenText(
     frame,
-    player ? `姓名：${player.name}\n${genderLabel(player.gender)}/${player.age}岁\n职业：${player.job}` : "姓名：生成中\n--/--岁\n职业：生成中",
+    player
+      ? `姓名：${player.name}\n${genderLabel(player.gender)}/${player.age}岁\n职业：${player.job}`
+      : playerSeed
+      ? `姓名：${playerSeed.name}\n${genderLabel(playerSeed.gender)}/${playerSeed.age}岁\n职业：${playerSeed.job}`
+      : "姓名：生成中\n--/--岁\n职业：生成中",
     915,
     300,
     147,
@@ -556,7 +563,7 @@ async function startParallelCharacterGeneration() {
     if (matchSession.batchId !== batchId) return;
 
     matchSession.cohort = cohortResult.cohort;
-    matchSession.roleSeeds = cohortResult.roles;
+    matchSession.roleSeeds = shuffleCharacterRoles(cohortResult.roles);
     renderMatchScreen();
   } catch (error) {
     if (matchSession.batchId !== batchId) return;
