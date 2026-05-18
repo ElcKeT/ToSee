@@ -54,6 +54,7 @@ const el = {
   loadingFrame: document.getElementById("loadingFrame"),
   loadingVideo: document.getElementById("loadingVideo"),
   loadingText: document.getElementById("loadingText"),
+  globalBgm: document.getElementById("globalBgm"),
 };
 
 const apiEnabled = true;
@@ -82,6 +83,7 @@ const SUPPORT_CARD_MAX_USES = 3;
 const FORTUNE_CARD_MAX_USES = 2;
 const ITEM_TYPES = ["swap", "support"];
 const RIGHTS_EVALUATION_INTERVAL = 3;
+const GLOBAL_BGM_VOLUME = 0.35;
 const EARLY_DEATH_SOCIAL_ENDING = "当生存本身已耗尽全部力气，\n人便很难再看见“未来”。";
 const UI_DEBUG_ENABLED =
   new URLSearchParams(window.location.search).has("debugUi") ||
@@ -360,6 +362,40 @@ function updateLoadingScale() {
   if (!el.loadingFrame) return;
   const scale = Math.min(window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT);
   el.loadingFrame.style.transform = `scale(${scale})`;
+}
+
+async function startGlobalBgm() {
+  if (!el.globalBgm || !el.globalBgm.paused) return true;
+  el.globalBgm.volume = GLOBAL_BGM_VOLUME;
+  el.globalBgm.loop = true;
+
+  try {
+    await el.globalBgm.play();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function setupGlobalBgm() {
+  if (!el.globalBgm) return;
+
+  el.globalBgm.volume = GLOBAL_BGM_VOLUME;
+  el.globalBgm.loop = true;
+
+  const unlockBgm = () => {
+    void startGlobalBgm().then((started) => {
+      if (!started) return;
+      window.removeEventListener("pointerdown", unlockBgm);
+      window.removeEventListener("keydown", unlockBgm);
+      window.removeEventListener("touchstart", unlockBgm);
+    });
+  };
+
+  void startGlobalBgm();
+  window.addEventListener("pointerdown", unlockBgm);
+  window.addEventListener("keydown", unlockBgm);
+  window.addEventListener("touchstart", unlockBgm, { passive: true });
 }
 
 function createScreenFrame(designHeight = DESIGN_HEIGHT, scaleMode = "contain") {
@@ -1025,7 +1061,7 @@ function renderPvpPanel(frame, player) {
   addHotspot(frame, 403, 1027, 72, 34, 6, () => openPvpPanelMode("support", target));
 
   if (player.marriedTo === target.id) {
-    addImageButton(frame, "./image_UI/解除关系4-9.png", 88, 1068, 67, 20, 7, () => openPvpPanelMode("divorce", target));
+    addImageButton(frame, "./image_UI/解除关系4-9.png", 88, 1050, 67, 20, 7, () => openPvpPanelMode("divorce", target));
   }
 
   if (hasItem(player, "swap")) {
@@ -1502,9 +1538,9 @@ function renderOpportunityOverlay(frame, overlay) {
   addImageButton(frame, "./image_UI/取消4-1.png", 1433, 281, 30, 30, 23, cancelOpportunitySelection);
   addImageButton(frame, "./image_UI/确定4-1.png", 893, 782, 161, 57, 23, confirmOpportunitySelection);
 
-  const layout = eventPopupContentLayout();
+  const layout = eventPopupContentLayout({ compactOptionsBottom: true });
   addScreenText(frame, eventData.title || "人生机遇场", 485, 310, 978, 34, 22, "large center");
-  addScrollableScreenText(
+  const storyBox = addScrollableScreenText(
     frame,
     eventData.narrative || "",
     layout.x,
@@ -1514,18 +1550,23 @@ function renderOpportunityOverlay(frame, overlay) {
     22,
     "event-body event-popup-story"
   );
+  const storyHeight = fitScrollableTextBox(storyBox, layout.storyHeight, 56);
+  const optionsTop = layout.storyTop + storyHeight + layout.optionsGap;
+  const optionsHeight = Math.max(72, layout.optionsBottom - optionsTop);
 
   const list = document.createElement("div");
-  list.className = "screen-text opportunity-outcomes";
-  setRect(list, layout.x, layout.optionsTop, layout.width, layout.optionsHeight, 22);
+  list.className = "screen-text event-options-list opportunity-outcomes";
+  setRect(list, layout.x, optionsTop, layout.width, optionsHeight, 22);
   list.innerHTML = `
-    <div class="opportunity-result">
-      <b>成功线</b><br>${esc(success?.description || "机遇成真。")}<br>
-      <span>${esc(effectPreview(success?.effects, getLocalPlayer()))}</span>
+    <div class="event-option opportunity-result readonly">
+      <div class="event-option-title">成功线</div>
+      <div class="event-option-desc">${esc(success?.description || "机遇成真。")}</div>
+      <div class="event-option-desc">${esc(effectPreview(success?.effects, getLocalPlayer()))}</div>
     </div>
-    <div class="opportunity-result">
-      <b>失败线</b><br>${esc(failure?.description || "机遇落空。")}<br>
-      <span>${esc(effectPreview(failure?.effects, getLocalPlayer()))}</span>
+    <div class="event-option opportunity-result readonly">
+      <div class="event-option-title">失败线</div>
+      <div class="event-option-desc">${esc(failure?.description || "机遇落空。")}</div>
+      <div class="event-option-desc">${esc(effectPreview(failure?.effects, getLocalPlayer()))}</div>
     </div>
   `;
   frame.appendChild(list);
@@ -1961,7 +2002,7 @@ function renderCourtVoteOverlay(frame) {
   addAsset(frame, "./image_UI/背景模糊遮罩4-3.png", 5, 0, 1915, 1158, 20);
   addAsset(frame, "./image_UI/审批背景框4-3.png", 410, 274, 1100, 611, 21);
 //  addScreenText(frame, session.eventData.title || "法庭议题", 485, 330, 930, 36, 22, "center large");
-  const narrativeBox = addScrollableScreenText(frame, session.eventData.narrative || "", 485, 390, 930, 200, 22, "event-body");
+  const narrativeBox = addScrollableScreenText(frame, session.eventData.narrative || "", 485, 390, 930, 160, 22, "event-body");
   fitScrollableTextBox(narrativeBox, 200, 80);
   const support = courtVoteOption(session, "support");
   const oppose = courtVoteOption(session, "oppose");
@@ -1969,10 +2010,10 @@ function renderCourtVoteOverlay(frame) {
   const guideBox = addScrollableScreenText(
     frame,
     `支持：${support?.description || support?.label || "改革方案"}\n${support?.voterProfile ? `支持者：${support.voterProfile}\n` : ""}反对：${oppose?.description || oppose?.label || "维持现状"}\n${oppose?.voterProfile ? `反对者：${oppose.voterProfile}\n` : ""}弃权：${abstain?.description || "政策悬置，不形成明确公共意志。"}${abstain?.voterProfile ? `\n弃权者：${abstain.voterProfile}` : ""}`,
-    560,
+    485,
     600,
-    800,
-    200,
+    930,
+    160,
     22,
     "event-body"
   );
@@ -2122,7 +2163,7 @@ async function finalizeDesignedCourtVote() {
 function renderCourtResultOverlay(frame, overlay) {
   addAsset(frame, "./image_UI/背景模糊遮罩4-4.png", 5, 0, 1915, 1158, 20);
   addAsset(frame, "./image_UI/通知背景框4-4.png", 562, 327, 797, 505, 21);
-  addAsset(frame, "./image_UI/结果宣判4-4.png", 880, 367, 170, 47, 22);
+  addAsset(frame, "./image_UI/结果宣判4-4.png", 880, 367, 170, 24, 22);
   addScrollableScreenText(frame, overlay.message || "法庭结果已结算。", 618, 442, 708, 245, 22, "event-body");
   addImageButton(frame, "./image_UI/确定4-4.png", 880, 749, 161, 57, 23, () => {
     syncSession.overlay = overlay.rewardItem ? { type: "itemReward", item: overlay.rewardItem } : null;
@@ -3728,6 +3769,7 @@ async function detectRuntimeStatus() {
 async function bootstrap() {
   try {
     bindEvents();
+    setupGlobalBgm();
     if (UI_DEBUG_ENABLED) {
       window.addEventListener("keydown", handleDebugKeyDown);
       console.info("[ui-debug] enabled. Use ?debugUi=1 or localStorage kanjian_debug_ui=1.");

@@ -476,6 +476,10 @@ body {
   background: rgba(213, 177, 255, 0.42);
 }
 
+.event-option.readonly {
+  cursor: default;
+}
+
 .event-option-title {
   font-size: 15px;
   margin-bottom: 4px;

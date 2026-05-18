@@ -163,11 +163,17 @@ ${historySummary}
 # 生成要求
 1) 根据上方“历史摘要”中的[open]/[closed]事件线判断延续关系：若有[open]事件线，优先延续；若已[closed]，避免复刻同构冲突。
 2) 写普通人日常中的现实性别矛盾，具体到场景、关系和制度压力，避免奇观化。
-3) 选项必须形成真实取舍：至少一个偏自保、一个偏争取公平；不要出现所有核心数值同涨或同跌。
-4) self只填基础 health/reputation/wealth 变化，wealth单位为万元；普通事件 wealth 建议在 -1.5~+1.5 内。
+3) 选项必须形成真实取舍：至少一个偏自保、一个偏争取公平；尽量不要出现所有数值同涨或同跌。
+4) self只填基础 health/reputation/wealth 变化。
 5) 每个选项都写 summary：人物+处境+选择+意义的1句话，用于经历手账。
 6) 每个选项都写 thread：该选项发生后的故事线状态和下一步悬念；若冲突已解决可closed。
-7) 普通场景事件只影响当前玩家自己的基础指标；effects只填写self。
+
+
+# 数值要求
+1) 尽量不要出现所有数值同涨或同跌
+2) health 范围建议在-8 ~ 8 内
+3) reputation 范围建议在 -5 ~ 5 内
+4) wealth单位为万元；普通事件 wealth 建议在 -2 ~ +2 内。
 
 # 输出JSON格式
 {
@@ -191,8 +197,8 @@ ${historySummary}
       },
       "effects": {
         "self": {
-          "health": -10,
-          "reputation": 5,
+          "health": -6,
+          "reputation": 4,
           "wealth": -2
         }
       }
@@ -227,11 +233,11 @@ ${historySummary}
 # 生成要求
 1) 事件必须是普通生活中极小概率但可叙事成立的机遇，例如中奖、意外获得资源、找到关键亲人/贵人、得到罕见转机、遇到玄学式转运人物等。
 2) 只生成2个结果选项：第一个必须是success，第二个必须是failure；玩家不会选择结果，系统会50%随机判定。
-3) 成功效果：个人数值大幅提升，health建议+12~+28，reputation建议+8~+28，wealth建议+8~+45。
-4) 失败效果：个人数值小幅损耗但不致死，health建议-2~-8，reputation建议-1~-6，wealth建议-0.5~-5。
+3) 成功效果：个人数值大幅提升，health建议+12 ~ +24，reputation建议+8 ~ +20，wealth建议 +8 ~ +30。
+4) 失败效果：个人数值小幅损耗但不致死，health建议-2 ~ -8，reputation建议-1 ~ -6，wealth建议 -1 ~ -5。
 5) 成功故事可以带一点传奇色彩，但不得写成暴力、违法、伤害他人或极端猎奇。
 6) 每个结果都写summary和thread，summary用于经历手账。
-7) effects只填写self。
+
 
 # 输出JSON格式
 {
@@ -301,11 +307,17 @@ ${historySummary}
 1) 架空化改写真实社会争议，不直接点名现实个人。
 2) 选项是参与讨论的不同立场，必须有分歧、代价和公共影响。
 3) 只生成主动参与讨论的立场选项；程序会额外追加固定的离场选项。
-4) self只填基础 health/reputation/wealth；wealth建议在 -1.5~+1.5 内。
+4) self只填基础 health/reputation/wealth。
 5) 选项不要全部同向增减；立场越激烈，短期压力通常越高。
 6) 每个选项写 summary，用一句话概括玩家如何参与公共讨论及其意义。
 7) 每个选项写 thread，说明该公共议题在选择后的发酵状态。
-8) 讨论选项只影响当前玩家自己的基础指标；effects只填写self。
+
+
+# 数值要求
+1) 尽量不要出现所有数值同涨或同跌
+2) health 范围建议在-8 ~ 8 内
+3) reputation 范围建议在 -5 ~ 5 内
+4) wealth单位为万元；普通事件 wealth 建议在 -2 ~ +2 内。
 
 # 输出JSON格式
 {
@@ -372,10 +384,15 @@ ${historySummary}
 # 生成要求
 1) 写成具体学习/练习场景，不写激烈冲突或立场对骂。
 2) 选项是不同学习路径或实践方式，差异体现在成本、收益和适用场景。
-3) 整体偏正向，但仍要有代价；self.health +2~+5，self.reputation 0~+2，self.wealth -1.5~0。
+3) 整体偏正向，但仍要有代价。
 4) 每个选项写 summary，概括玩家获得了什么方法或认知。
 5) 每个选项写 thread；图书馆通常可closed，除非明显引出后续实践。
-6) 学习选项只影响当前玩家自己的基础指标；effects只填写self。
+
+# 数值要求
+1) 尽量不要出现所有数值同涨或同跌
+2) health 范围建议在 0 ~ +5 内
+3) reputation 范围建议在 0 ~ +2 内
+4) wealth单位为万元；普通事件 wealth 建议在 -2 ~ 0 内。
 
 # 输出JSON格式
 {
@@ -440,12 +457,17 @@ round: ${gameState.round}
 ${historySummary}
 
 # 生成要求
-1) 所有选项 self.health 必须为正数，建议 +4~+12。
-2) 每个选项必须有代价：self.wealth<0 或 self.reputation<0，至少一个为负；wealth建议 -0.5~-2。
+1) 所有选项 health 必须为正数。
+2) 每个选项必须有代价：wealth<0 或 reputation<0，至少一个为负。
 3) 选项差异体现在恢复幅度、代价结构和行动建议，不写冲突对骂。
 4) 每个选项写 summary，概括玩家如何修复状态并付出何种代价。
 5) 每个选项写 thread；修复行动通常closed，若引出关系沟通可open。
-6) 咨询室只影响当前玩家自己的基础指标；effects只填写self。
+
+# 数值要求
+1) 尽量不要出现所有数值同涨或同跌
+2) health 范围建议在 +4 ~ +12 内
+3) reputation 范围建议在 -8 ~ +2 内
+4) wealth单位为万元；普通事件 wealth 建议在 -5 ~ 0 内。
 
 # 输出JSON格式
 {
@@ -470,8 +492,8 @@ ${historySummary}
       "effects": {
         "self": {
           "health": 6,
-          "reputation": -1,
-          "wealth": -1
+          "reputation": -2,
+          "wealth": -2
         }
       }
     }
@@ -547,9 +569,14 @@ ${historySummary}
 3) 必须在 narrative 中描述支持者、反对者、弃权者三类人的画像、想法和考量。
 4) 生成3个投票结果：support、oppose、abstain。
 5) 每个投票结果都要写出明确制度后果差异。支持改革通常更可能改善被保护群体处境；反对可能短期稳定但保留问题；弃权通常造成政策悬置、社会疲惫或轻微负面。
-6) self只填投票者个人基础 health/reputation/wealth 变化。
-7) 单次法庭投票的effects只填写self。
-8) 每个选项写 voterProfile，描述选择该立场的人通常如何想。
+6) 单次法庭投票的effects只填写self。
+7) 每个选项写 voterProfile，描述选择该立场的人通常如何想。
+
+# 数值要求
+1) 尽量不要出现所有数值同涨或同跌
+2) health 范围建议在 -5 ~ +5 内
+3) reputation 范围建议在 -5 ~ +5 内
+4) wealth单位为万元；普通事件 wealth 建议在 -2 ~ +2 内。
 
 输出JSON:
 {
@@ -654,7 +681,7 @@ ${roundChoicesText}
 
 输出要求:
 1) 输出字段固定为 maleDelta、femaleDelta、summary。
-2) maleDelta 和 femaleDelta 是最近三轮对男性/女性社会权益值的综合变化，必须是 -10~10 的整数。
+2) maleDelta 和 femaleDelta 是最近三轮对男性/女性社会权益值的综合变化，建议在 -10 ~ +10 范围内。
 3) 如果经历主要改善女性在职业、家庭、公共表达或安全中的处境，可让femaleDelta高于maleDelta。
 4) 如果经历改善男性照料权、情感表达、免于单一养家压力等处境，也可以让maleDelta为正。
 5) 若经历引发反弹、污名、制度搁置或风险转嫁，对应权益值可以为负。
